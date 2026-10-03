@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LV Produção — Lançamentos</title>
+    
+    <!-- CONFIGURAÇÕES PWA (Baseado no Sistema Principal) -->
+    <meta name="theme-color" content="#0f202b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LV Prod">
+    <link rel="apple-touch-icon" href="icon.png">
+    
+    <link id="manifest-link" rel="manifest">
+    <script>
+        const manifest = {
+            name: "LV Produção",
+            short_name: "LV Prod",
+            start_url: window.location.href,
+            display: "fullscreen", 
+            background_color: "#0f202b",
+            theme_color: "#0f202b", 
+            icons: [{ src: "icon.png", sizes: "192x192 512x512", type: "image/png", purpose: "any maskable" }]
+        };
+        const manifestStr = encodeURIComponent(JSON.stringify(manifest));
+        document.getElementById('manifest-link').setAttribute('href', 'data:application/json;charset=utf-8,' + manifestStr);
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+        :root {
+            --ink: #13212f;
+            --ink-2: #203143;
+            --muted: #718096;
+            --muted-2: #9aabbb;
+            --paper: #f4f7f8;
+            --surface: #ffffff;
+            --surface-soft: #f8fafb;
+            --line: #e3ebef;
+            --rail: #122331;
+            --brand: #12a7a2;
+            --brand-dark: #087b79;
+            --brand-pale: #e5f7f5;
+            --lime: #c8ed74;
+            --success: #1aa878;
+            --danger: #de5b5b;
+            --danger-pale: #fff0f0;
+            --shadow-sm: 0 1px 2px rgba(19, 33, 47, .04);
+            --shadow-lg: 0 24px 70px rgba(13, 31, 43, .20);
+            --radius-md: 16px;
+            --radius-xl: 30px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); font-size: 14px; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+        button, input, select { font: inherit; }
+        
+        .view { display: none; }
+        .view.active { display: block; animation: reveal .35s ease both; }
+        @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- LOGIN STYLES --- */
+        div#view-login.active { min-height: 100vh; display: grid; place-items: center; padding: 24px; position: relative; overflow: hidden; background: #0f202b; }
+        #view-login::before, #view-login::after { content: ''; position: absolute; border-radius: 999px; pointer-events: none; filter: blur(1px); }
+        #view-login::before { width: 520px; height: 520px; right: -150px; top: -210px; background: radial-gradient(circle, rgba(73,200,223,.28), transparent 66%); }
+        #view-login::after { width: 560px; height: 560px; left: -250px; bottom: -300px; background: radial-gradient(circle, rgba(200,237,116,.18), transparent 65%); }
+        .login-shell { width: min(1040px, 100%); min-height: 620px; display: grid; grid-template-columns: 1.06fr .94fr; position: relative; z-index: 1; border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-xl); overflow: hidden; background: rgba(255,255,255,.96); box-shadow: var(--shadow-lg); }
+        .login-visual { background: linear-gradient(145deg, #153747 0%, #102632 62%, #0b1e29 100%); color: #fff; padding: 52px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .login-visual::before { content: ''; position: absolute; width: 390px; height: 390px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; right: -120px; bottom: -150px; box-shadow: 0 0 0 28px rgba(255,255,255,.03), 0 0 0 56px rgba(255,255,255,.025); }
+        .brand-lockup { display: flex; align-items: center; gap: 13px; position: relative; z-index: 2; }
+        .brand-mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; background: var(--lime); color: var(--ink); box-shadow: 0 10px 26px rgba(200,237,116,.22); }
+        .brand-mark svg { width: 27px; height: 27px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .brand-name { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -.5px; }
+        .brand-caption { color: rgba(255,255,255,.58); font-size: 11px; letter-spacing: .13em; text-transform: uppercase; margin-top: 1px; }
+        .login-visual h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(30px, 4vw, 47px); line-height: 1.06; letter-spacing: -1.8px; margin-bottom: 18px; max-width: 430px; position: relative; z-index: 2;}
+        .login-wrapper { padding: 54px 50px; display: flex; flex-direction: column; justify-content: center; background: var(--surface); }
+        .login-header { margin-bottom: 34px; }
+        .login-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 29px; letter-spacing: -1px; color: var(--ink); margin-bottom: 7px; }
+        .login-header p { color: var(--muted); font-size: 14px; }
+        .form-group-login { margin-bottom: 20px; }
+        .form-group-login label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--ink-2); }
+        .form-control-login { width: 100%; min-height: 47px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; outline: none; font-size: 14px; color: var(--ink); background: var(--surface-soft); transition: .2s; }
+        .form-control-login:focus { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 4px rgba(18,167,162,.11); }
+        .btn-block { width: 100%; min-height: 49px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 11px; color: #fff; background: var(--ink); font-weight: 700; cursor: pointer; transition: .2s; }
+        .btn-block:hover:not(:disabled) { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 8px 18px rgba(18,167,162,.2); }
+        .error-msg { display: none; padding: 11px 13px; margin-top: 15px; border-radius: 10px; color: #aa4141; background: var(--danger-pale); border: 1px solid #f5d0d0; font-size: 12px; font-weight: 600; text-align: center; }
+        .spinner { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,.45); border-bottom-color: #fff; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+
+        /* --- APP LAYOUT FIXO --- */
+        html, body { height: 100%; overflow: hidden; margin: 0; }
+        
+        #view-app-main.active { display: flex; height: 100vh; width: 100%; overflow: hidden; background: var(--paper); }
+        .app-layout { display: flex; width: 100%; height: 100%; }
+        
+        .sidebar { width: 266px; background: var(--rail); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; padding: 22px 16px; z-index: 100; height: 100%; }
+        .main-wrapper { flex: 1; height: 100%; overflow-y: auto; overflow-x: hidden; position: relative; }
+        
+        .sidebar-brand { padding: 6px 12px 24px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid rgba(255,255,255,.09); margin-bottom: 20px;}
+        .sidebar-brand-copy strong { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 16px; }
+        .sidebar-brand-copy span { display: block; color: #7e99aa; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
+        
+        .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow-y: auto; scrollbar-width: none; margin-bottom: 15px; }
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+        .nav-item { min-height: 47px; display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 0; border-radius: 12px; color: #89a2b2; background: transparent; text-align: left; font-weight: 600; cursor: pointer; transition: .2s; font-size: 13px;}
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,.06); }
+        .nav-item.active { color: #fff; background: linear-gradient(90deg, rgba(18,167,162,.27), rgba(18,167,162,.1)); box-shadow: inset 3px 0 0 var(--lime); }
+        
+        .btn-logout { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #91a8b5; background: #0f1e29; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; margin-top: auto; flex-shrink: 0; }
+        .btn-logout:hover { color: #fff; border-color: rgba(255,255,255,.3); background: #162a39; }
+
+        .topbar { min-height: 60px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 42px; position: sticky; top: 0; z-index: 90; font-weight: 600;}
+        .topbar-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px; color: var(--brand-dark); background: var(--brand-pale); font-size: 11px; font-weight: 700; }
+        
+        .content-area { padding: 30px 42px 60px 42px; max-width: 1200px; margin: 0 auto; }
+        .content-intro { margin-bottom: 25px; }
+        .content-intro h1 { font-family: 'Space Grotesk', sans-serif; font-size: 27px; letter-spacing: -1px; }
+        .content-intro p { color: var(--muted); font-size: 14px; margin-top: 5px; }
+
+        .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 25px; overflow: hidden; }
+        .card-header { padding: 20px 25px; border-bottom: 1px solid var(--line); background: #fbfcfc; }
+        .card-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 17px; }
+        .card-body { padding: 25px; }
+
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 12px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; }
+        
+        input, select { width: 100%; min-height: 46px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; outline: none; font-family: inherit; font-size: 14px; background: var(--surface-soft); transition: .2s; }
+        input:focus, select:focus { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px rgba(18,167,162,.1); }
+        
+        button.btn { min-height: 46px; padding: 0 20px; border: 0; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
+        .btn-primary { background: var(--brand); color: #fff; }
+        .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-success { background: var(--success); color: #fff; }
+
+        .table-responsive { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 500px; }
+        th { padding: 15px; background: #f7fafb; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--line); position: sticky; top: 0; }
+        td { padding: 15px; border-bottom: 1px solid #edf2f4; font-size: 13px; color: var(--ink-2); vertical-align: middle; }
+        tr:last-child td { border-bottom: 0; }
+        
+        .badge { padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap;}
+        .badge-mot { background: #eaf6fb; color: #318eb4; }
+        .badge-aju { background: #fff5df; color: #d89433; }
+        .badge-warning { background: #f4f7f8; color: #718096; border: 1px solid var(--line); }
+
+        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; font-weight: bold; color: var(--brand-dark); }
+        
+        #relatorio-print { display: none; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            .app-layout, .sidebar, .topbar { display: none !important; }
+            #relatorio-print, #relatorio-print * { visibility: visible; }
+            #relatorio-print { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: #fff; }
+            .print-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .print-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; margin-bottom: 5px;}
+            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            .print-table th, .print-table td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; color: #000; }
+            .print-table th { background-color: #f4f4f4; }
+            .print-total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px;}
+        }
+
+        /* --- RESPONSIVO PARA SMARTPHONES (PWA) --- */
+        @media (max-width: 780px) {
+            html, body { height: auto; overflow: visible; }
+            #view-app-main.active { height: auto; display: block; overflow: visible; }
+            .app-layout { height: auto; flex-direction: column; display: block; }
+            
+            /* Sidebar vira um Menu Header de Scroll Horizontal */
+            .sidebar { width: 100%; height: auto; padding: 15px 15px 5px 15px; position: relative; border-bottom: 1px solid #1f3747; }
+            .sidebar-brand { margin-bottom: 10px; border: none; padding-bottom: 0; }
+            
+            .sidebar-nav { display: flex; flex-direction: row; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 0; }
+            .nav-item { flex: 0 0 auto; width: auto; white-space: nowrap; font-size: 13px; min-height: 42px; }
+            
+            .main-wrapper { height: auto; overflow: visible; padding-bottom: 100px; }
+            .topbar { padding: 0 20px; border-bottom: none; }
+            .content-area { padding: 15px 15px 100px 15px; }
+
+            .card-header { padding: 15px; }
+            .card-body { padding: 15px; }
+
+            /* Ajuste Form Lançamentos Mobile para ficar prático */
+            .form-row { display: flex; flex-direction: column; gap: 12px; }
+            input, select { font-size: 16px; min-height: 52px; border-radius: 12px; } /* 16px evita zoom automático no iOS */
+            .btn-primary { min-height: 54px; font-size: 15px; border-radius: 12px; margin-top: 5px; }
+
+            /* Botão "Voltar ao Menu" Flutuante (App Style) */
+            .btn-logout {
+                display: flex !important;
+                position: fixed;
+                bottom: 15px;
+                left: 15px;
+                width: calc(100% - 30px);
+                z-index: 1001;
+                background: var(--ink-2);
+                color: #fff;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+                border: 1px solid rgba(255,255,255,0.15);
+                border-radius: 14px;
+                min-height: 54px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Service Worker script idêntico ao Sistema Principal[cite: 8] -->
+    <script>
+        if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    if (regs.length === 0) {
+                        const swCode = "self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('activate', e => e.waitUntil(self.clients.claim())); self.addEventListener('fetch', e => {});";
+                        const blob = new Blob([swCode], { type: 'application/javascript' });
+                        navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
+                    }
+                });
+            });
+        }
+    </script>
+
+    <!-- LOADING GLOBAL -->
+    <div id="loading-global" class="loading-overlay">
+        <span class="spinner" style="border-color: var(--brand); border-bottom-color: transparent; width: 35px; height: 35px; border-width: 3px;"></span>
+        <span id="loading-text">A validar acesso...</span>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="view-login" class="view">
+        <div class="login-shell">
+            <section class="login-visual">
+                <div class="brand-lockup">
+                    <div class="brand-mark">
+                        <svg viewBox="0 0 24 24"><path d="M3 7.5h11v9H3zM14 11h3.2l3 3v2.5H14z"/><path d="M6.5 16.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM17.5 16.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/><path d="M3 10h3"/></svg>
+                    </div>
+                    <div><div class="brand-name">LV Transportes</div><div class="brand-caption">Módulo de Produção</div></div>
+                </div>
+                <h2>Controlo de rotas e pagamentos integrados.</h2>
+            </section>
+            <section class="login-wrapper">
+                <div class="login-header">
+                    <h1>Acesso Restrito</h1>
+                    <p>Entre com as credenciais do sistema principal.</p>
+                </div>
+                <div class="form-group-login">
+                    <label>E-mail corporativo</label>
+                    <input type="email" id="login-email" class="form-control-login" placeholder="usuario@empresa.com">
+                </div>
+                <div class="form-group-login">
+                    <label>Senha de acesso</label>
+                    <input type="password" id="login-senha" class="form-control-login" placeholder="Digite a senha">
+                </div>
+                <button id="btn-login-submit" onclick="window.fazerLogin()" class="btn-block">Aceder ao sistema</button>
+                <div id="login-error" class="error-msg">Credenciais inválidas.</div>
+            </section>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO -->
+    <div id="view-app-main" class="view">
+        <div class="app-layout">
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-copy">
+                        <strong>LV Transportes</strong>
+                        <span>Controlo de Produção</span>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" onclick="window.mudarAba('view-dashboard', this)">Visão Geral & Lançamentos</button>
+                    <button class="nav-item" onclick="window.mudarAba('view-relatorios', this)">Relatórios & Pagamentos</button>
+                    <button class="nav-item" onclick="window.mudarAba('view-cadastros', this)">Funcionários (Espelho)</button>
+                </nav>
+                
+                <button class="btn-logout" onclick="window.location.href='index.html'">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Voltar ao Menu
+                </button>
+            </aside>
+
+            <main class="main-wrapper">
+                <header class="topbar">
+                    <span id="topbar-title">Visão Geral & Lançamentos</span>
+                    <div class="topbar-badge"><i></i> Ligado ao Firebase</div>
+                </header>
+
+                <div class="content-area">
+                    
+                    <!-- TELA 1: DASHBOARD E LANÇAMENTOS -->
+                    <div id="view-dashboard" class="view active">
+                        <div class="content-intro">
+                            <h1>Lançamento Diário de Rotas</h1>
+                            <p>Registe a quantidade de rotas e o valor pago no dia.</p>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Nova Produção</h2>
+                            </div>
+                            <div class="card-body">
+                                <form onsubmit="window.lancarRota(event)">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Data</label>
+                                            <input type="date" id="lanc-data" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Funcionário</label>
+                                            <select id="lanc-funcionario" required>
+                                                <option value="">A carregar...</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Quantidade de Rotas</label>
+                                            <!-- inputmode numeric abre teclado numérico prático no celular -->
+                                            <input type="number" inputmode="numeric" id="lanc-qtd" min="1" value="1" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Valor Pago (Por Rota)</label>
+                                            <input type="text" inputmode="numeric" id="lanc-valor" placeholder="R$ 0,00" required oninput="window.mascaraMoeda(event)">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="btn-salvar-rota" style="width: 100%;">Processar Registo</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Últimos Lançamentos Registados</h2>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Funcionário</th>
+                                            <th>Função</th>
+                                            <th>Rotas</th>
+                                            <th>Valor a Receber</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-lancamentos"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TELA 2: RELATÓRIOS -->
+                    <div id="view-relatorios" class="view">
+                        <div class="content-intro">
+                            <h1>Gerar Relatório de Pagamento</h1>
+                            <p>Selecione um funcionário e o período para gerar o PDF.</p>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <form class="form-row" onsubmit="window.gerarRelatorioTela(event)" style="align-items: flex-end;">
+                                    <div class="form-group">
+                                        <label>Funcionário</label>
+                                        <select id="filtro-funcionario" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Data Inicial</label>
+                                        <input type="date" id="filtro-data-inicio" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Data Final</label>
+                                        <input type="date" id="filtro-data-fim" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Extrair Dados</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div id="resultado-relatorio" style="display: none;">
+                            <div class="card">
+                                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                    <h2>Demonstrativo Calculado</h2>
+                                    <button class="btn btn-success" onclick="window.imprimirPDF()">🖨️ Baixar PDF</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Rotas</th>
+                                                <th>V. Unit.</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabela-relatorio"></tbody>
+                                    </table>
+                                </div>
+                                <div class="card-body" style="text-align: right; background: #fbfcfc;">
+                                    <h3 style="font-family: 'Space Grotesk'; font-size: clamp(20px, 4vw, 24px);">Total a Pagar: <span id="total-relatorio" style="color: var(--brand);">R$ 0,00</span></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TELA 3: FUNCIONÁRIOS (ESPELHO) -->
+                    <div id="view-cadastros" class="view">
+                        <div class="content-intro">
+                            <h1>Espelho de Funcionários</h1>
+                            <p>Defina as funções da equipa para classificação nos relatórios.</p>
+                        </div>
+
+                        <div class="card">
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nome do Funcionário (Base Principal)</th>
+                                            <th>Função Atual</th>
+                                            <th style="width: 180px;">Definir Função</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-funcionarios-espelho"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ESTRUTURA PARA IMPRESSÃO PDF -->
+    <div id="relatorio-print">
+        <div class="print-header">
+            <h1>LV Transportes</h1>
+            <p>Recibo de Controlo de Produção e Pagamento</p>
+        </div>
+        <p><strong>Funcionário:</strong> <span id="print-nome"></span></p>
+        <p><strong>Função:</strong> <span id="print-funcao"></span></p>
+        <p><strong>Período:</strong> <span id="print-periodo"></span></p>
+        <br>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Qtd. Rotas</th>
+                    <th>Valor Unitário</th>
+                    <th>Subtotal do Dia</th>
+                </tr>
+            </thead>
+            <tbody id="print-tbody"></tbody>
+        </table>
+        <div class="print-total">
+            TOTAL A RECEBER: <span id="print-total-valor"></span>
+        </div>
+        <div style="margin-top: 80px; text-align: center;">
+            <p>________________________________________________</p>
+            <p>Assinatura do Funcionário</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD069bcFDrT6pnVxsDJNeHP715Gqj4rLVI",
+            authDomain: "musica-bd3f7.firebaseapp.com",
+            databaseURL: "https://musica-bd3f7-default-rtdb.firebaseio.com",
+            projectId: "musica-bd3f7",
+            storageBucket: "musica-bd3f7.firebasestorage.app",
+            messagingSenderId: "167263490744",
+            appId: "1:167263490744:web:ed3305dfe4bd507b9c1a4d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        setPersistence(auth, browserSessionPersistence).catch(console.error);
+
+        let funcionariosDB = [];
+        let lancamentosDB = [];
+        let dadosRelatorioAtual = {};
+
+        window.mudarAba = function(idAba, botao) {
+            try {
+                document.querySelectorAll('.content-area .view').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                
+                document.getElementById(idAba).classList.add('active');
+                if(botao) {
+                    botao.classList.add('active');
+                    document.getElementById('topbar-title').innerText = botao.innerText;
+                }
+            } catch (error) { console.error(error); }
+        };
+
+        window.mascaraMoeda = function(event) {
+            let v = event.target.value.replace(/\D/g, ''); 
+            if (v === "") { event.target.value = ""; return; }
+            v = (parseInt(v) / 100).toFixed(2) + ''; 
+            v = v.replace(".", ","); 
+            v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); 
+            event.target.value = "R$ " + v; 
+        };
+
+        window.converterMoedaParaFloat = function(valorString) {
+            if (!valorString) return 0;
+            let numero = valorString.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+            return parseFloat(numero) || 0;
+        };
+
+        window.fazerLogin = function() {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+            const errorDiv = document.getElementById('login-error');
+            const btnLogin = document.getElementById('btn-login-submit');
+            if(!email || !senha) return;
+            
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = '<span class="spinner"></span> A aceder...';
+            
+            signInWithEmailAndPassword(auth, email, senha)
+                .then(() => { 
+                    errorDiv.style.display = 'none'; 
+                    document.getElementById('login-senha').value = ''; 
+                })
+                .catch(() => { 
+                    errorDiv.style.display = 'block'; 
+                })
+                .finally(() => { 
+                    btnLogin.disabled = false; 
+                    btnLogin.innerHTML = 'Aceder ao sistema'; 
+                });
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('view-login').classList.remove('active');
+                document.getElementById('view-app-main').classList.add('active');
+                document.getElementById('loading-text').innerText = "A sincronizar com a base de dados...";
+                carregarDadosDoFirebase();
+            } else {
+                document.getElementById('loading-global').style.display = 'none';
+                document.getElementById('view-app-main').classList.remove('active');
+                document.getElementById('view-login').classList.add('active');
+            }
+        });
+
+        async function carregarDadosDoFirebase() {
+            try {
+                funcionariosDB = [];
+                const queryFuncs = await getDocs(collection(db, "funcionarios"));
+                queryFuncs.forEach(d => {
+                    funcionariosDB.push({ id: d.id, ...d.data() });
+                });
+
+                lancamentosDB = [];
+                const queryLanc = await getDocs(collection(db, "producao_lancamentos"));
+                queryLanc.forEach(d => {
+                    lancamentosDB.push({ id: d.id, ...d.data() });
+                });
+
+                document.getElementById('lanc-data').value = new Date().toISOString().split('T')[0];
+                atualizarInterfaces();
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                alert("Erro ao sincronizar com a base de dados.");
+            } finally {
+                document.getElementById('loading-global').style.display = 'none';
+            }
+        }
+
+        window.atualizarFuncao = async function(idFuncionario, novaFuncao) {
+            if(!novaFuncao) return;
+            try {
+                document.getElementById('loading-global').style.display = 'flex';
+                await updateDoc(doc(db, "funcionarios", idFuncionario), { funcao: novaFuncao });
+                const idx = funcionariosDB.findIndex(f => f.id === idFuncionario);
+                if(idx > -1) funcionariosDB[idx].funcao = novaFuncao;
+                atualizarInterfaces();
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao atualizar função.");
+            } finally {
+                document.getElementById('loading-global').style.display = 'none';
+            }
+        };
+
+        function atualizarInterfaces() {
+            let optsFuncs = '<option value="">Selecione o Funcionário...</option>';
+            const funcAptos = funcionariosDB.filter(f => f.funcao === 'Motorista' || f.funcao === 'Ajudante');
+            funcAptos.forEach(f => {
+                const nomeCompleto = `${f.nome} ${f.sobrenome || ''}`.trim();
+                optsFuncs += `<option value="${f.id}">${nomeCompleto} (${f.funcao})</option>`;
+            });
+            document.getElementById('lanc-funcionario').innerHTML = optsFuncs;
+            document.getElementById('filtro-funcionario').innerHTML = optsFuncs;
+
+            const tbFunc = document.getElementById('tabela-funcionarios-espelho');
+            tbFunc.innerHTML = '';
+            funcionariosDB.forEach(f => {
+                const nomeCompleto = `${f.nome} ${f.sobrenome || ''}`.trim();
+                const funcValida = (f.funcao === 'Motorista' || f.funcao === 'Ajudante');
+                const badge = f.funcao === 'Motorista' ? 'badge-mot' : (f.funcao === 'Ajudante' ? 'badge-aju' : 'badge-warning');
+                
+                tbFunc.innerHTML += `
+                    <tr>
+                        <td><strong>${nomeCompleto}</strong></td>
+                        <td><span class="badge ${badge}">${funcValida ? f.funcao : 'Pendente'}</span></td>
+                        <td>
+                            <select class="form-control" style="min-height: 34px; padding: 5px; font-size: 12px;" onchange="window.atualizarFuncao('${f.id}', this.value)">
+                                <option value="">Definir como...</option>
+                                <option value="Motorista" ${f.funcao === 'Motorista' ? 'selected' : ''}>Motorista</option>
+                                <option value="Ajudante" ${f.funcao === 'Ajudante' ? 'selected' : ''}>Ajudante</option>
+                            </select>
+                        </td>
+                    </tr>`;
+            });
+
+            const tbLanc = document.getElementById('tabela-lancamentos');
+            tbLanc.innerHTML = '';
+            let lancsSorted = [...lancamentosDB].sort((a,b) => b.data.localeCompare(a.data)).slice(0, 30);
+            
+            lancsSorted.forEach(l => {
+                const badge = l.funcaoFuncionario === 'Motorista' ? 'badge-mot' : 'badge-aju';
+                tbLanc.innerHTML += `
+                    <tr>
+                        <td style="white-space:nowrap;">${formatarData(l.data)}</td>
+                        <td style="white-space:nowrap;"><strong>${l.nomeFuncionario}</strong></td>
+                        <td><span class="badge ${badge}">${l.funcaoFuncionario}</span></td>
+                        <td>${l.qtd}</td>
+                        <td style="color:var(--success); font-weight:bold; white-space:nowrap;">${formatarMoeda(l.valorTotal)}</td>
+                        <td>
+                            <button class="btn btn-danger" style="min-height:30px; padding: 0 10px;" onclick="window.excluirLancamento('${l.id}')">Excluir</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        window.lancarRota = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-salvar-rota');
+            btn.disabled = true; btn.innerText = "A processar...";
+
+            try {
+                const data = document.getElementById('lanc-data').value;
+                const idFuncionario = document.getElementById('lanc-funcionario').value;
+                const qtd = parseInt(document.getElementById('lanc-qtd').value);
+                const valorUnitarioString = document.getElementById('lanc-valor').value;
+                
+                const func = funcionariosDB.find(f => f.id === idFuncionario);
+                if(!func || !func.funcao) throw new Error("Funcionário inválido ou sem função.");
+
+                const valorUnitario = window.converterMoedaParaFloat(valorUnitarioString);
+                
+                if (valorUnitario <= 0) {
+                    alert("Por favor, informe o valor pago por rota.");
+                    btn.disabled = false; btn.innerText = "Processar Registo";
+                    return;
+                }
+
+                const valorTotal = valorUnitario * qtd;
+                const nomeCompleto = `${func.nome} ${func.sobrenome || ''}`.trim();
+
+                const novoRegisto = {
+                    data: data,
+                    idFuncionario: idFuncionario,
+                    nomeFuncionario: nomeCompleto,
+                    funcaoFuncionario: func.funcao,
+                    qtd: qtd,
+                    valorUnitario: valorUnitario,
+                    valorTotal: valorTotal,
+                    criadoEm: new Date().toISOString()
+                };
+
+                const docRef = await addDoc(collection(db, "producao_lancamentos"), novoRegisto);
+                lancamentosDB.push({ id: docRef.id, ...novoRegisto });
+                
+                document.getElementById('lanc-qtd').value = 1;
+                document.getElementById('lanc-valor').value = '';
+                atualizarInterfaces();
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao lançar rota. Verifique os dados.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Processar Registo";
+            }
+        };
+
+        window.excluirLancamento = async function(id) {
+            if(confirm("Deseja apagar este lançamento da Cloud?")) {
+                try {
+                    document.getElementById('loading-global').style.display = 'flex';
+                    await deleteDoc(doc(db, "producao_lancamentos", id));
+                    lancamentosDB = lancamentosDB.filter(l => l.id !== id);
+                    atualizarInterfaces();
+                } catch (e) {
+                    console.error(e); alert("Erro ao excluir.");
+                } finally { document.getElementById('loading-global').style.display = 'none'; }
+            }
+        };
+
+        const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const formatarData = (dataString) => {
+            if(!dataString) return '-';
+            const [a, m, d] = dataString.split('-');
+            return `${d}/${m}/${a}`;
+        };
+
+        window.gerarRelatorioTela = function(e) {
+            e.preventDefault();
+            const idFunc = document.getElementById('filtro-funcionario').value;
+            const dataIn = document.getElementById('filtro-data-inicio').value;
+            const dataFim = document.getElementById('filtro-data-fim').value;
+
+            const func = funcionariosDB.find(f => f.id === idFunc);
+            
+            const filtrados = lancamentosDB.filter(l => {
+                return l.idFuncionario === idFunc && l.data >= dataIn && l.data <= dataFim;
+            }).sort((a,b) => a.data.localeCompare(b.data));
+
+            const tbRel = document.getElementById('tabela-relatorio');
+            tbRel.innerHTML = '';
+            let somaTotal = 0;
+
+            filtrados.forEach(l => {
+                somaTotal += l.valorTotal;
+                tbRel.innerHTML += `
+                    <tr>
+                        <td>${formatarData(l.data)}</td>
+                        <td>${l.qtd} rotas</td>
+                        <td>${formatarMoeda(l.valorUnitario)}</td>
+                        <td style="font-weight:bold;">${formatarMoeda(l.valorTotal)}</td>
+                    </tr>`;
+            });
+
+            if(filtrados.length === 0) tbRel.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhuma rota registada neste período.</td></tr>';
+
+            document.getElementById('total-relatorio').innerText = formatarMoeda(somaTotal);
+            document.getElementById('resultado-relatorio').style.display = 'block';
+
+            dadosRelatorioAtual = {
+                nome: `${func.nome} ${func.sobrenome || ''}`.trim(),
+                funcao: func.funcao,
+                periodo: `${formatarData(dataIn)} a ${formatarData(dataFim)}`,
+                lancamentos: filtrados,
+                total: somaTotal
+            };
+        };
+
+        window.imprimirPDF = function() {
+            if(!dadosRelatorioAtual.nome) return;
+            document.getElementById('print-nome').innerText = dadosRelatorioAtual.nome;
+            document.getElementById('print-funcao').innerText = dadosRelatorioAtual.funcao;
+            document.getElementById('print-periodo').innerText = dadosRelatorioAtual.periodo;
+            document.getElementById('print-total-valor').innerText = formatarMoeda(dadosRelatorioAtual.total);
+            
+            const tb = document.getElementById('print-tbody');
+            tb.innerHTML = '';
+            dadosRelatorioAtual.lancamentos.forEach(l => {
+                tb.innerHTML += `
+                    <tr>
+                        <td>${formatarData(l.data)}</td>
+                        <td>${l.qtd}</td>
+                        <td>${formatarMoeda(l.valorUnitario)}</td>
+                        <td>${formatarMoeda(l.valorTotal)}</td>
+                    </tr>`;
+            });
+            window.print();
+        };
+    </script>
+</body>
+</html>
