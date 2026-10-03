@@ -207,6 +207,34 @@
                 min-height: 54px;
                 font-size: 14px;
             }
+
+           /* --- Ajuste Mobile da Tela de Login --- */
+div#view-login.active {
+    padding: 15px; /* Reduz o espaçamento externo na tela pequena */
+}
+
+.login-shell {
+    grid-template-columns: 1fr; /* Transforma de duas colunas para apenas uma */
+    min-height: auto; 
+}
+
+.login-visual {
+    padding: 35px 25px; /* Reduz o espaçamento interno */
+    min-height: auto;
+}
+
+.login-visual h2 {
+    font-size: 26px; /* Reduz a fonte da mensagem de impacto para não quebrar feio */
+    margin-top: 20px;
+}
+
+.login-visual::before {
+    display: none; /* Oculta o círculo de fundo vazado gigante que pode vazar a tela */
+}
+
+.login-wrapper {
+    padding: 40px 25px; /* Reduz o respiro lateral do formulário */
+}
         }
     </style>
 </head>
