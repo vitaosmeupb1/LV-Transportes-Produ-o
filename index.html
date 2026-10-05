@@ -141,7 +141,7 @@
         .btn-secondary { background: var(--surface-soft); color: var(--ink-2); border: 1px solid var(--line); }
         .btn-secondary:hover { background: #e6ebed; }
 
-        .table-responsive { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; -webkit-overflow-scrolling: touch; }
+        .table-responsive { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; -webkit-overflow-scrolling: touch; border-top-left-radius: 0; border-top-right-radius: 0; border-top: none; }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 500px; }
         th { padding: 15px; background: #f7fafb; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
         td { padding: 15px; border-bottom: 1px solid #edf2f4; font-size: 13px; color: var(--ink-2); vertical-align: middle; }
@@ -381,6 +381,33 @@
                             <div class="card-header">
                                 <h2>Últimos Lançamentos Registados</h2>
                             </div>
+                            <!-- BARRA DE FILTROS DO DASHBOARD -->
+                            <div class="card-body" style="background: var(--surface-soft); border-bottom: 1px solid var(--line); padding: 15px 25px;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Filtrar por Data</label>
+                                        <input type="date" id="filtro-dash-data" onchange="window.atualizarInterfaces()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Filtrar por Funcionário</label>
+                                        <select id="filtro-dash-funcionario" onchange="window.atualizarInterfaces()">
+                                            <option value="">Todos os Funcionários</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select id="filtro-dash-status" onchange="window.atualizarInterfaces()">
+                                            <option value="">Todos</option>
+                                            <option value="Não">Pendentes</option>
+                                            <option value="Sim">Pagos</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="justify-content: flex-end;">
+                                        <button class="btn btn-secondary" onclick="window.limparFiltrosDash()" style="width: 100%; min-height: 46px;">Limpar Filtros</button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="table-responsive">
                                 <table>
                                     <thead>
@@ -656,7 +683,7 @@
                 });
 
                 document.getElementById('lanc-data').value = new Date().toISOString().split('T')[0];
-                atualizarInterfaces();
+                window.atualizarInterfaces();
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
                 alert("Erro ao sincronizar com a base de dados.");
@@ -672,7 +699,7 @@
                 await updateDoc(doc(db, "funcionarios", idFuncionario), { funcao: novaFuncao });
                 const idx = funcionariosDB.findIndex(f => f.id === idFuncionario);
                 if(idx > -1) funcionariosDB[idx].funcao = novaFuncao;
-                atualizarInterfaces();
+                window.atualizarInterfaces();
             } catch (error) {
                 console.error(error);
                 alert("Erro ao atualizar função.");
@@ -681,20 +708,43 @@
             }
         };
 
-        function atualizarInterfaces() {
+        window.limparFiltrosDash = function() {
+            document.getElementById('filtro-dash-data').value = '';
+            document.getElementById('filtro-dash-funcionario').value = '';
+            document.getElementById('filtro-dash-status').value = '';
+            window.atualizarInterfaces();
+        };
+
+        window.atualizarInterfaces = function() {
             // Calcula Total Geral em Aberto do Sistema todo
             const totalAbertoGeral = lancamentosDB.reduce((acc, l) => l.statusPagamento !== 'Sim' ? acc + l.valorTotal : acc, 0);
             document.getElementById('total-geral-aberto').innerText = formatarMoeda(totalAbertoGeral);
 
+            // Guarda seleções atuais para não as perder ao reconstruir os campos
+            const currLancFunc = document.getElementById('lanc-funcionario').value;
+            const currFiltroFunc = document.getElementById('filtro-funcionario').value;
+            const currDashFunc = document.getElementById('filtro-dash-funcionario').value;
+            const currLancVeiculo = document.getElementById('lanc-veiculo').value;
+
             // Atualiza Select de Funcionários
             let optsFuncs = '<option value="">Selecione o Funcionário...</option>';
+            let optsDashFuncs = '<option value="">Todos os Funcionários</option>';
+            
             const funcAptos = funcionariosDB.filter(f => f.funcao === 'Motorista' || f.funcao === 'Ajudante');
             funcAptos.forEach(f => {
                 const nomeCompleto = `${f.nome} ${f.sobrenome || ''}`.trim();
                 optsFuncs += `<option value="${f.id}">${nomeCompleto} (${f.funcao})</option>`;
+                optsDashFuncs += `<option value="${f.id}">${nomeCompleto} (${f.funcao})</option>`;
             });
+            
             document.getElementById('lanc-funcionario').innerHTML = optsFuncs;
+            document.getElementById('lanc-funcionario').value = currLancFunc;
+            
             document.getElementById('filtro-funcionario').innerHTML = optsFuncs;
+            document.getElementById('filtro-funcionario').value = currFiltroFunc;
+
+            document.getElementById('filtro-dash-funcionario').innerHTML = optsDashFuncs;
+            document.getElementById('filtro-dash-funcionario').value = currDashFunc;
 
             // Atualiza Select de Veículos
             let optsVeiculos = '<option value="">Selecione o Veículo...</option>';
@@ -703,6 +753,7 @@
                 optsVeiculos += `<option value="${v.id}">${identificacao}</option>`;
             });
             document.getElementById('lanc-veiculo').innerHTML = optsVeiculos;
+            document.getElementById('lanc-veiculo').value = currLancVeiculo;
 
             // Atualiza Espelho de Funcionários
             const tbFunc = document.getElementById('tabela-funcionarios-espelho');
@@ -726,10 +777,44 @@
                     </tr>`;
             });
 
-            // Atualiza Tabela de Lançamentos
+            // Aplica os filtros da Dashboard na Tabela de Lançamentos
+            const fData = document.getElementById('filtro-dash-data').value;
+            const fFunc = document.getElementById('filtro-dash-funcionario').value;
+            const fStatus = document.getElementById('filtro-dash-status').value;
+
+            let lancsFiltered = [...lancamentosDB];
+            
+            if (fData) {
+                lancsFiltered = lancsFiltered.filter(l => l.data === fData);
+            }
+            if (fFunc) {
+                lancsFiltered = lancsFiltered.filter(l => l.idFuncionario === fFunc);
+            }
+            
+            // CORREÇÃO DO FILTRO DE STATUS AQUI
+            if (fStatus) {
+                if (fStatus === 'Não') {
+                    // Traz tudo que tem 'Não' OU que não tem esse campo preenchido (vazio/antigos)
+                    lancsFiltered = lancsFiltered.filter(l => l.statusPagamento === 'Não' || !l.statusPagamento);
+                } else {
+                    // Traz apenas o que tem 'Sim'
+                    lancsFiltered = lancsFiltered.filter(l => l.statusPagamento === fStatus);
+                }
+            }
+
+            let lancsSorted = lancsFiltered.sort((a,b) => b.data.localeCompare(a.data));
+            
+            // Se nenhum filtro estiver ativo, mostramos apenas os 30 últimos para não sobrecarregar a tela
+            if (!fData && !fFunc && !fStatus) {
+                lancsSorted = lancsSorted.slice(0, 30);
+            }
+
             const tbLanc = document.getElementById('tabela-lancamentos');
             tbLanc.innerHTML = '';
-            let lancsSorted = [...lancamentosDB].sort((a,b) => b.data.localeCompare(a.data)).slice(0, 30);
+            
+            if(lancsSorted.length === 0) {
+                tbLanc.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nenhuma rota encontrada com estes filtros.</td></tr>';
+            }
             
             lancsSorted.forEach(l => {
                 const isPago = l.statusPagamento === 'Sim';
@@ -758,7 +843,7 @@
                         <td style="white-space: nowrap; vertical-align: top;">${acoesHtml}</td>
                     </tr>`;
             });
-        }
+        };
 
         window.lancarRota = async function(e) {
             e.preventDefault();
@@ -814,7 +899,7 @@
                 document.getElementById('lanc-turno').value = '';
                 document.getElementById('lanc-veiculo').value = '';
                 
-                atualizarInterfaces();
+                window.atualizarInterfaces();
             } catch (err) {
                 console.error(err);
                 alert("Erro ao lançar rota. Verifique os dados.");
@@ -856,7 +941,7 @@
                     lancamentosDB[idx].dataPagamento = dataPagou;
                 }
                 window.fecharModalPagamento();
-                atualizarInterfaces();
+                window.atualizarInterfaces();
             } catch (e) {
                 console.error("Erro ao confirmar pagamento:", e);
                 alert("Ocorreu um erro ao registar o pagamento.");
@@ -878,7 +963,7 @@
                         lancamentosDB[idx].statusPagamento = 'Não';
                         lancamentosDB[idx].dataPagamento = null;
                     }
-                    atualizarInterfaces();
+                    window.atualizarInterfaces();
                 } catch (e) {
                     console.error("Erro ao desfazer pagamento:", e);
                     alert("Ocorreu um erro ao anular o pagamento.");
@@ -894,7 +979,7 @@
                     document.getElementById('loading-global').style.display = 'flex';
                     await deleteDoc(doc(db, "producao_lancamentos", id));
                     lancamentosDB = lancamentosDB.filter(l => l.id !== id);
-                    atualizarInterfaces();
+                    window.atualizarInterfaces();
                 } catch (e) {
                     console.error(e); alert("Erro ao excluir.");
                 } finally { document.getElementById('loading-global').style.display = 'none'; }
