@@ -63,6 +63,13 @@
         @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* --- UI EXPANSÍVEL --- */
+        .expand-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .expand-btn { background: var(--surface-soft); border: 1px solid var(--line); color: var(--ink); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; transition: .2s; }
+        .expand-header:hover .expand-btn { background: var(--line); }
+        .collapse-body { display: none; padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--line); }
+        .collapse-body.show { display: block; animation: reveal .3s ease; }
+
         /* --- LOGIN STYLES --- */
         div#view-login.active { min-height: 100vh; display: grid; place-items: center; padding: 24px; position: relative; overflow: hidden; background: #0f202b; }
         #view-login::before, #view-login::after { content: ''; position: absolute; border-radius: 999px; pointer-events: none; filter: blur(1px); }
@@ -70,7 +77,6 @@
         #view-login::after { width: 560px; height: 560px; left: -250px; bottom: -300px; background: radial-gradient(circle, rgba(200,237,116,.18), transparent 65%); }
         .login-shell { width: min(1040px, 100%); min-height: 620px; display: grid; grid-template-columns: 1.06fr .94fr; position: relative; z-index: 1; border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-xl); overflow: hidden; background: rgba(255,255,255,.96); box-shadow: var(--shadow-lg); }
         .login-visual { background: linear-gradient(145deg, #153747 0%, #102632 62%, #0b1e29 100%); color: #fff; padding: 52px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
-        .login-visual::before { content: ''; position: absolute; width: 390px; height: 390px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; right: -120px; bottom: -150px; box-shadow: 0 0 0 28px rgba(255,255,255,.03), 0 0 0 56px rgba(255,255,255,.025); }
         .brand-lockup { display: flex; align-items: center; gap: 13px; position: relative; z-index: 2; }
         .brand-mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; background: var(--lime); color: var(--ink); box-shadow: 0 10px 26px rgba(200,237,116,.22); }
         .brand-mark svg { width: 27px; height: 27px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -84,15 +90,12 @@
         .form-group-login { margin-bottom: 20px; }
         .form-group-login label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--ink-2); }
         .form-control-login { width: 100%; min-height: 47px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; outline: none; font-size: 14px; color: var(--ink); background: var(--surface-soft); transition: .2s; }
-        .form-control-login:focus { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 4px rgba(18,167,162,.11); }
         .btn-block { width: 100%; min-height: 49px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 11px; color: #fff; background: var(--ink); font-weight: 700; cursor: pointer; transition: .2s; }
-        .btn-block:hover:not(:disabled) { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 8px 18px rgba(18,167,162,.2); }
         .error-msg { display: none; padding: 11px 13px; margin-top: 15px; border-radius: 10px; color: #aa4141; background: var(--danger-pale); border: 1px solid #f5d0d0; font-size: 12px; font-weight: 600; text-align: center; }
         .spinner { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,.45); border-bottom-color: #fff; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
 
         /* --- APP LAYOUT FIXO --- */
         html, body { height: 100%; overflow: hidden; margin: 0; }
-        
         #view-app-main.active { display: flex; height: 100vh; width: 100%; overflow: hidden; background: var(--paper); }
         .app-layout { display: flex; width: 100%; height: 100%; }
         
@@ -106,12 +109,10 @@
         .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow-y: auto; scrollbar-width: none; margin-bottom: 15px; }
         .sidebar-nav::-webkit-scrollbar { display: none; }
         .nav-item { min-height: 47px; display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 0; border-radius: 12px; color: #89a2b2; background: transparent; text-align: left; font-weight: 600; cursor: pointer; transition: .2s; font-size: 13px;}
-        .nav-item:hover { color: #fff; background: rgba(255,255,255,.06); }
         .nav-item.active { color: #fff; background: linear-gradient(90deg, rgba(18,167,162,.27), rgba(18,167,162,.1)); box-shadow: inset 3px 0 0 var(--lime); }
         
         .btn-logout { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #91a8b5; background: #0f1e29; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; margin-top: auto; flex-shrink: 0; }
-        .btn-logout:hover { color: #fff; border-color: rgba(255,255,255,.3); background: #162a39; }
-
+        
         .topbar { min-height: 60px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 42px; position: sticky; top: 0; z-index: 90; font-weight: 600;}
         .topbar-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px; color: var(--brand-dark); background: var(--brand-pale); font-size: 11px; font-weight: 700; }
         
@@ -121,7 +122,7 @@
         .content-intro p { color: var(--muted); font-size: 14px; margin-top: 5px; }
 
         .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 25px; overflow: hidden; }
-        .card-header { padding: 20px 25px; border-bottom: 1px solid var(--line); background: #fbfcfc; }
+        .card-header { padding: 20px 25px; background: #fbfcfc; }
         .card-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 17px; }
         .card-body { padding: 25px; }
 
@@ -134,12 +135,10 @@
         
         button.btn { min-height: 46px; padding: 0 20px; border: 0; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-primary { background: var(--brand); color: #fff; }
-        .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-warning { background: #d89433; color: #fff; }
         .btn-success { background: var(--success); color: #fff; }
         .btn-secondary { background: var(--surface-soft); color: var(--ink-2); border: 1px solid var(--line); }
-        .btn-secondary:hover { background: #e6ebed; }
 
         .table-responsive { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; -webkit-overflow-scrolling: touch; border-top-left-radius: 0; border-top-right-radius: 0; border-top: none; }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 500px; }
@@ -259,6 +258,31 @@
         </div>
     </div>
 
+    <!-- MODAL DE EDIÇÃO DE DESCONTO -->
+    <div id="modal-editar-desconto" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Editar Desconto</h3>
+            <form onsubmit="window.salvarEdicaoDesconto(event)">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Data do Desconto</label>
+                    <input type="date" id="edit-desc-data" required class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Nome / Motivo</label>
+                    <input type="text" id="edit-desc-nome" required class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Valor Total</label>
+                    <input type="text" inputmode="numeric" id="edit-desc-valor" required class="form-control" oninput="window.mascaraMoeda(event)">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.fecharModalEditarDesconto()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- LOGIN -->
     <div id="view-login" class="view">
         <div class="login-shell">
@@ -305,6 +329,7 @@
                 <nav class="sidebar-nav">
                     <button class="nav-item active" onclick="window.mudarAba('view-dashboard', this)">Visão Geral & Lançamentos</button>
                     <button class="nav-item" onclick="window.mudarAba('view-relatorios', this)">Relatórios & Pagamentos</button>
+                    <button class="nav-item" onclick="window.mudarAba('view-descontos', this)">Gestão de Descontos</button>
                     <button class="nav-item" onclick="window.mudarAba('view-cadastros', this)">Funcionários (Espelho)</button>
                 </nav>
                 
@@ -325,15 +350,17 @@
                     <!-- TELA 1: DASHBOARD E LANÇAMENTOS -->
                     <div id="view-dashboard" class="view active">
                         <div class="content-intro">
-                            <h1>Lançamento Diário de Rotas</h1>
-                            <p>Registe a quantidade de rotas do dia. (O pagamento pode ser baixado depois na tabela).</p>
+                            <h1>Lançamento Diário</h1>
+                            <p>Adicione novas rotas diárias da equipa.</p>
                         </div>
 
+                        <!-- NOVA PRODUÇÃO (EXPANSÍVEL) -->
                         <div class="card">
-                            <div class="card-header">
-                                <h2>Nova Produção</h2>
+                            <div class="card-header expand-header" onclick="window.toggleCard('form-nova-producao', 'btn-nova-producao')">
+                                <h2>Nova Produção (Rota)</h2>
+                                <div class="expand-btn" id="btn-nova-producao">+</div>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body collapse-body" id="form-nova-producao">
                                 <form onsubmit="window.lancarRota(event)">
                                     <div class="form-row">
                                         <div class="form-group">
@@ -377,12 +404,14 @@
                             </div>
                         </div>
 
+                        <!-- TABELA DE LANÇAMENTOS -->
                         <div class="card">
-                            <div class="card-header">
-                                <h2>Últimos Lançamentos Registados</h2>
+                            <div class="card-header" style="border-bottom: 1px solid var(--line);">
+                                <h2>Últimos Lançamentos Registados (Rotas)</h2>
+                                <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">Mostrando histórico recente para economizar recursos.</p>
                             </div>
                             <!-- BARRA DE FILTROS DO DASHBOARD -->
-                            <div class="card-body" style="background: var(--surface-soft); border-bottom: 1px solid var(--line); padding: 15px 25px;">
+                            <div class="card-body" style="background: var(--surface-soft); padding: 15px 25px;">
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Filtrar por Data</label>
@@ -432,15 +461,15 @@
                     <div id="view-relatorios" class="view">
                         <div class="content-intro">
                             <h1>Relatórios & Pagamentos</h1>
-                            <p>Acompanhe os valores em aberto e gere recibos de pagamento.</p>
+                            <p>Acompanhe a produção, deduza os descontos e gere recibos de pagamento.</p>
                         </div>
 
                         <!-- CARD GLOBAL DE VALORES EM ABERTO -->
                         <div class="card" style="background: var(--danger-pale); border-color: #f5d0d0;">
                             <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                                 <div>
-                                    <h2 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--danger);">Total Geral em Aberto (Equipa)</h2>
-                                    <p style="color: var(--danger); font-size: 13px; opacity: 0.8; margin-top: 3px;">Soma de todas as rotas pendentes no sistema.</p>
+                                    <h2 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--danger);">Total em Aberto (Histórico Recente da Equipa)</h2>
+                                    <p style="color: var(--danger); font-size: 13px; opacity: 0.8; margin-top: 3px;">Soma das rotas pendentes no limite atual visualizado.</p>
                                 </div>
                                 <h2 style="font-family: 'Space Grotesk'; font-size: clamp(24px, 5vw, 32px); color: var(--danger);" id="total-geral-aberto">R$ 0,00</h2>
                             </div>
@@ -461,7 +490,7 @@
                                         <label>Data Final</label>
                                         <input type="date" id="filtro-data-fim" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Extrair Dados</button>
+                                    <button type="submit" class="btn btn-primary">Buscar na Nuvem</button>
                                 </form>
                             </div>
                         </div>
@@ -477,7 +506,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
-                                                <th>Rotas</th>
+                                                <th>Rotas / Motivo</th>
                                                 <th>V. Unit.</th>
                                                 <th>Subtotal</th>
                                                 <th>Status</th>
@@ -487,25 +516,112 @@
                                     </table>
                                 </div>
                                 <!-- TOTAIS DETALHADOS DO RELATÓRIO -->
-                                <div class="card-body" style="background: #fbfcfc; display: flex; justify-content: flex-end; gap: 30px; flex-wrap: wrap; text-align: right; border-top: 1px solid var(--line);">
+                                <div class="card-body" style="background: #fbfcfc; display: flex; justify-content: flex-end; gap: 20px; flex-wrap: wrap; text-align: right; border-top: 1px solid var(--line);">
                                     <div>
-                                        <span style="font-size: 12px; font-weight: 700; color: var(--success); text-transform: uppercase;">Já Pago</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 20px; color: var(--success);" id="total-relatorio-pago">R$ 0,00</h3>
+                                        <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Total Produzido</span>
+                                        <h3 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--ink);" id="total-relatorio-geral">R$ 0,00</h3>
                                     </div>
                                     <div>
-                                        <span style="font-size: 12px; font-weight: 700; color: var(--danger); text-transform: uppercase;">Em Aberto</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 20px; color: var(--danger);" id="total-relatorio-aberto">R$ 0,00</h3>
+                                        <span style="font-size: 11px; font-weight: 700; color: var(--success); text-transform: uppercase;">Já Pago</span>
+                                        <h3 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--success);" id="total-relatorio-pago">R$ 0,00</h3>
                                     </div>
-                                    <div style="border-left: 2px solid var(--line); padding-left: 30px;">
-                                        <span style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Total Geral</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 24px; color: var(--ink);" id="total-relatorio-geral">R$ 0,00</h3>
+                                    <div>
+                                        <span style="font-size: 11px; font-weight: 700; color: #d89433; text-transform: uppercase;">Descontos Aplicados</span>
+                                        <h3 style="font-family: 'Space Grotesk'; font-size: 18px; color: #d89433;" id="total-relatorio-desconto">R$ 0,00</h3>
+                                    </div>
+                                    <div style="border-left: 2px solid var(--line); padding-left: 20px;">
+                                        <span style="font-size: 12px; font-weight: 700; color: var(--danger); text-transform: uppercase;">Em Aberto (A Receber)</span>
+                                        <h3 style="font-family: 'Space Grotesk'; font-size: 24px; color: var(--danger);" id="total-relatorio-aberto">R$ 0,00</h3>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- TELA 3: FUNCIONÁRIOS (ESPELHO) -->
+                    <!-- TELA 3: GESTÃO DE DESCONTOS -->
+                    <div id="view-descontos" class="view">
+                        <div class="content-intro">
+                            <h1>Gestão de Descontos</h1>
+                            <p>Consulte, lance, edite ou exclua os descontos aplicados à equipa.</p>
+                        </div>
+
+                        <!-- LANÇAR DESCONTOS (EXPANSÍVEL) MOVIDO PARA CÁ -->
+                        <div class="card">
+                            <div class="card-header expand-header" onclick="window.toggleCard('form-novo-desconto', 'btn-novo-desconto')">
+                                <h2>Lançar Novo Desconto</h2>
+                                <div class="expand-btn" id="btn-novo-desconto">+</div>
+                            </div>
+                            <div class="card-body collapse-body" id="form-novo-desconto">
+                                <form onsubmit="window.lancarDesconto(event)">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Data</label>
+                                            <input type="date" id="desc-data" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Funcionário</label>
+                                            <select id="desc-funcionario" required>
+                                                <option value="">A carregar...</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Nome / Motivo do Desconto</label>
+                                            <input type="text" id="desc-nome" placeholder="Ex: Adiantamento, Avaria..." required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Valor do Desconto</label>
+                                            <input type="text" inputmode="numeric" id="desc-valor" placeholder="R$ 0,00" required oninput="window.mascaraMoeda(event)">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning" id="btn-salvar-desconto" style="width: 100%;">Processar Desconto</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header" style="border-bottom: 1px solid var(--line);">
+                                <h2>Descontos Registados</h2>
+                            </div>
+                            
+                            <!-- BARRA DE FILTROS DOS DESCONTOS -->
+                            <div class="card-body" style="background: var(--surface-soft); padding: 15px 25px;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Filtrar por Mês</label>
+                                        <select id="filtro-desc-mes" onchange="window.atualizarTabelaDescontos()">
+                                            <option value="">Todos os Meses</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Filtrar por Funcionário</label>
+                                        <select id="filtro-desc-funcionario" onchange="window.atualizarTabelaDescontos()">
+                                            <option value="">Todos os Funcionários</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="justify-content: flex-end;">
+                                        <button class="btn btn-secondary" onclick="window.limparFiltrosDesc()" style="width: 100%; min-height: 46px;">Limpar Filtros</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Funcionário</th>
+                                            <th>Motivo</th>
+                                            <th>Valor Abatido</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-gestao-descontos"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TELA 4: FUNCIONÁRIOS (ESPELHO) -->
                     <div id="view-cadastros" class="view">
                         <div class="content-intro">
                             <h1>Espelho de Funcionários</h1>
@@ -547,8 +663,8 @@
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Qtd. Rotas</th>
-                    <th>Valor Unitário</th>
+                    <th>Rotas / Motivo</th>
+                    <th>V. Unit.</th>
                     <th>Subtotal</th>
                     <th>Status</th>
                 </tr>
@@ -556,9 +672,10 @@
             <tbody id="print-tbody"></tbody>
         </table>
         <div class="print-total">
-            <div style="color: #228b22;">JÁ PAGO: <span id="print-total-pago"></span></div>
-            <div style="color: #b22222;">EM ABERTO: <span id="print-total-aberto"></span></div>
-            <div>TOTAL GERAL: <span id="print-total-valor"></span></div>
+            <div style="color: #444; font-size: 12px;">TOTAL PRODUZIDO: <span id="print-total-valor"></span></div>
+            <div style="color: #228b22; font-size: 12px;">JÁ PAGO (ROTAS): <span id="print-total-pago"></span></div>
+            <div style="color: #d89433; font-size: 12px;">DESCONTOS ABATIDOS: <span id="print-total-desconto"></span></div>
+            <div style="color: #b22222; margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd;">A RECEBER (EM ABERTO): <span id="print-total-aberto"></span></div>
         </div>
         <div style="margin-top: 80px; text-align: center;">
             <p>________________________________________________</p>
@@ -568,7 +685,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -588,9 +705,24 @@
 
         let funcionariosDB = [];
         let veiculosDB = [];
-        let lancamentosDB = [];
+        let lancamentosDB = []; 
+        let descontosDB = []; 
         let dadosRelatorioAtual = {};
         let idParaPagamento = null; 
+        let idDescontoEdicao = null;
+
+        // Toggle Expand/Collapse Cards
+        window.toggleCard = function(containerId, btnId) {
+            const container = document.getElementById(containerId);
+            const btn = document.getElementById(btnId);
+            if(container.classList.contains('show')) {
+                container.classList.remove('show');
+                btn.innerText = "+";
+            } else {
+                container.classList.add('show');
+                btn.innerText = "–";
+            }
+        };
 
         window.mudarAba = function(idAba, botao) {
             try {
@@ -661,28 +793,36 @@
 
         async function carregarDadosDoFirebase() {
             try {
-                // Carrega Funcionários
                 funcionariosDB = [];
                 const queryFuncs = await getDocs(collection(db, "funcionarios"));
                 queryFuncs.forEach(d => {
                     funcionariosDB.push({ id: d.id, ...d.data() });
                 });
 
-                // Carrega Veículos
                 veiculosDB = [];
                 const queryVeic = await getDocs(collection(db, "veiculos"));
                 queryVeic.forEach(d => {
                     veiculosDB.push({ id: d.id, ...d.data() });
                 });
 
-                // Carrega Lançamentos
                 lancamentosDB = [];
-                const queryLanc = await getDocs(collection(db, "producao_lancamentos"));
+                const qLanc = query(collection(db, "producao_lancamentos"), orderBy("data", "desc"), limit(150));
+                const queryLanc = await getDocs(qLanc);
                 queryLanc.forEach(d => {
                     lancamentosDB.push({ id: d.id, ...d.data() });
                 });
 
-                document.getElementById('lanc-data').value = new Date().toISOString().split('T')[0];
+                descontosDB = [];
+                const qDesc = query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(150));
+                const queryDesc = await getDocs(qDesc);
+                queryDesc.forEach(d => {
+                    descontosDB.push({ id: d.id, ...d.data() });
+                });
+
+                const dataHoje = new Date().toISOString().split('T')[0];
+                document.getElementById('lanc-data').value = dataHoje;
+                document.getElementById('desc-data').value = dataHoje;
+
                 window.atualizarInterfaces();
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
@@ -715,18 +855,23 @@
             window.atualizarInterfaces();
         };
 
+        window.limparFiltrosDesc = function() {
+            document.getElementById('filtro-desc-mes').value = '';
+            document.getElementById('filtro-desc-funcionario').value = '';
+            window.atualizarTabelaDescontos();
+        };
+
         window.atualizarInterfaces = function() {
-            // Calcula Total Geral em Aberto do Sistema todo
             const totalAbertoGeral = lancamentosDB.reduce((acc, l) => l.statusPagamento !== 'Sim' ? acc + l.valorTotal : acc, 0);
             document.getElementById('total-geral-aberto').innerText = formatarMoeda(totalAbertoGeral);
 
-            // Guarda seleções atuais para não as perder ao reconstruir os campos
             const currLancFunc = document.getElementById('lanc-funcionario').value;
+            const currDescFunc = document.getElementById('desc-funcionario').value;
             const currFiltroFunc = document.getElementById('filtro-funcionario').value;
             const currDashFunc = document.getElementById('filtro-dash-funcionario').value;
+            const currDescFiltroFunc = document.getElementById('filtro-desc-funcionario').value;
             const currLancVeiculo = document.getElementById('lanc-veiculo').value;
 
-            // Atualiza Select de Funcionários
             let optsFuncs = '<option value="">Selecione o Funcionário...</option>';
             let optsDashFuncs = '<option value="">Todos os Funcionários</option>';
             
@@ -740,13 +885,34 @@
             document.getElementById('lanc-funcionario').innerHTML = optsFuncs;
             document.getElementById('lanc-funcionario').value = currLancFunc;
             
+            document.getElementById('desc-funcionario').innerHTML = optsFuncs;
+            document.getElementById('desc-funcionario').value = currDescFunc;
+            
             document.getElementById('filtro-funcionario').innerHTML = optsFuncs;
             document.getElementById('filtro-funcionario').value = currFiltroFunc;
 
             document.getElementById('filtro-dash-funcionario').innerHTML = optsDashFuncs;
             document.getElementById('filtro-dash-funcionario').value = currDashFunc;
 
-            // Atualiza Select de Veículos
+            document.getElementById('filtro-desc-funcionario').innerHTML = optsDashFuncs;
+            document.getElementById('filtro-desc-funcionario').value = currDescFiltroFunc;
+
+            // Extrair Meses Existentes de Descontos para o Filtro
+            const currDescFiltroMes = document.getElementById('filtro-desc-mes').value;
+            let mesesSet = new Set();
+            descontosDB.forEach(d => {
+                if(d.data) mesesSet.add(d.data.substring(0, 7)); 
+            });
+            let mesesArr = Array.from(mesesSet).sort().reverse();
+            let optsMeses = '<option value="">Todos os Meses</option>';
+            mesesArr.forEach(m => {
+                const [ano, mes] = m.split('-');
+                optsMeses += `<option value="${m}">${mes}/${ano}</option>`;
+            });
+            document.getElementById('filtro-desc-mes').innerHTML = optsMeses;
+            document.getElementById('filtro-desc-mes').value = currDescFiltroMes;
+
+            // Veículos
             let optsVeiculos = '<option value="">Selecione o Veículo...</option>';
             veiculosDB.forEach(v => {
                 const identificacao = v.marcaModelo || v.placa || v.modelo || v.nome || `Veículo ${v.id}`;
@@ -755,7 +921,6 @@
             document.getElementById('lanc-veiculo').innerHTML = optsVeiculos;
             document.getElementById('lanc-veiculo').value = currLancVeiculo;
 
-            // Atualiza Espelho de Funcionários
             const tbFunc = document.getElementById('tabela-funcionarios-espelho');
             tbFunc.innerHTML = '';
             funcionariosDB.forEach(f => {
@@ -777,43 +942,33 @@
                     </tr>`;
             });
 
-            // Aplica os filtros da Dashboard na Tabela de Lançamentos
+            // Aplica os filtros da Dashboard
             const fData = document.getElementById('filtro-dash-data').value;
             const fFunc = document.getElementById('filtro-dash-funcionario').value;
             const fStatus = document.getElementById('filtro-dash-status').value;
 
             let lancsFiltered = [...lancamentosDB];
             
-            if (fData) {
-                lancsFiltered = lancsFiltered.filter(l => l.data === fData);
-            }
-            if (fFunc) {
-                lancsFiltered = lancsFiltered.filter(l => l.idFuncionario === fFunc);
-            }
-            
-            // CORREÇÃO DO FILTRO DE STATUS AQUI
+            if (fData) lancsFiltered = lancsFiltered.filter(l => l.data === fData);
+            if (fFunc) lancsFiltered = lancsFiltered.filter(l => l.idFuncionario === fFunc);
             if (fStatus) {
                 if (fStatus === 'Não') {
-                    // Traz tudo que tem 'Não' OU que não tem esse campo preenchido (vazio/antigos)
                     lancsFiltered = lancsFiltered.filter(l => l.statusPagamento === 'Não' || !l.statusPagamento);
                 } else {
-                    // Traz apenas o que tem 'Sim'
                     lancsFiltered = lancsFiltered.filter(l => l.statusPagamento === fStatus);
                 }
             }
 
             let lancsSorted = lancsFiltered.sort((a,b) => b.data.localeCompare(a.data));
-            
-            // Se nenhum filtro estiver ativo, mostramos apenas os 30 últimos para não sobrecarregar a tela
             if (!fData && !fFunc && !fStatus) {
-                lancsSorted = lancsSorted.slice(0, 30);
+                lancsSorted = lancsSorted.slice(0, 50);
             }
 
             const tbLanc = document.getElementById('tabela-lancamentos');
             tbLanc.innerHTML = '';
             
             if(lancsSorted.length === 0) {
-                tbLanc.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nenhuma rota encontrada com estes filtros.</td></tr>';
+                tbLanc.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nenhum registo recente encontrado.</td></tr>';
             }
             
             lancsSorted.forEach(l => {
@@ -822,7 +977,6 @@
                 const textoStatus = isPago ? `PAGO EM ${formatarData(l.dataPagamento)}` : 'PENDENTE';
                 const iconeFunc = l.funcaoFuncionario === 'Motorista' ? '🚗' : '📦';
 
-                // Botões de Ação na tabela
                 let acoesHtml = '';
                 if (!isPago) {
                     acoesHtml += `<button class="btn btn-success" style="min-height:32px; font-size:12px; padding: 0 10px; margin-bottom: 4px; display: block; width: 100%;" onclick="window.abrirModalPagamento('${l.id}')">Pagar</button>`;
@@ -843,8 +997,119 @@
                         <td style="white-space: nowrap; vertical-align: top;">${acoesHtml}</td>
                     </tr>`;
             });
+
+            window.atualizarTabelaDescontos();
         };
 
+        // --- GESTÃO DE DESCONTOS ---
+        window.atualizarTabelaDescontos = function() {
+            const tbDesc = document.getElementById('tabela-gestao-descontos');
+            if(!tbDesc) return;
+
+            const fMes = document.getElementById('filtro-desc-mes').value;
+            const fFunc = document.getElementById('filtro-desc-funcionario').value;
+
+            let descFiltered = [...descontosDB];
+            
+            if (fMes) descFiltered = descFiltered.filter(d => d.data && d.data.startsWith(fMes));
+            if (fFunc) descFiltered = descFiltered.filter(d => d.idFuncionario === fFunc);
+
+            let descSorted = descFiltered.sort((a,b) => b.data.localeCompare(a.data));
+
+            // Limite visual se não houver filtros aplicados
+            if (!fMes && !fFunc) {
+                descSorted = descSorted.slice(0, 50);
+            }
+
+            tbDesc.innerHTML = '';
+
+            if(descSorted.length === 0) {
+                tbDesc.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum desconto encontrado com estes filtros.</td></tr>';
+                return;
+            }
+
+            descSorted.forEach(d => {
+                tbDesc.innerHTML += `
+                    <tr>
+                        <td style="white-space:nowrap;">${formatarData(d.data)}</td>
+                        <td style="white-space:nowrap;"><strong>${d.nomeFuncionario}</strong></td>
+                        <td>${d.nomeDesconto}</td>
+                        <td style="color:var(--danger); font-weight:bold; white-space:nowrap;">- ${formatarMoeda(d.valorTotal)}</td>
+                        <td style="white-space: nowrap;">
+                            <button class="btn btn-primary" style="min-height:30px; font-size:12px; padding: 0 10px; margin-right: 5px;" onclick="window.abrirModalEditarDesconto('${d.id}')">Editar</button>
+                            <button class="btn btn-danger" style="min-height:30px; font-size:12px; padding: 0 10px;" onclick="window.excluirDesconto('${d.id}')">Excluir</button>
+                        </td>
+                    </tr>`;
+            });
+        };
+
+        window.abrirModalEditarDesconto = function(id) {
+            const desc = descontosDB.find(d => d.id === id);
+            if(!desc) return;
+            idDescontoEdicao = id;
+            document.getElementById('edit-desc-data').value = desc.data;
+            document.getElementById('edit-desc-nome').value = desc.nomeDesconto;
+            document.getElementById('edit-desc-valor').value = formatarMoeda(desc.valorTotal);
+            document.getElementById('modal-editar-desconto').style.display = 'flex';
+        };
+
+        window.fecharModalEditarDesconto = function() {
+            idDescontoEdicao = null;
+            document.getElementById('modal-editar-desconto').style.display = 'none';
+        };
+
+        window.salvarEdicaoDesconto = async function(e) {
+            e.preventDefault();
+            if(!idDescontoEdicao) return;
+
+            const data = document.getElementById('edit-desc-data').value;
+            const nome = document.getElementById('edit-desc-nome').value;
+            const valorStr = document.getElementById('edit-desc-valor').value;
+            const valor = window.converterMoedaParaFloat(valorStr);
+
+            if(valor <= 0) {
+                alert("O valor deve ser maior que zero.");
+                return;
+            }
+
+            try {
+                document.getElementById('loading-global').style.display = 'flex';
+                await updateDoc(doc(db, "producao_descontos", idDescontoEdicao), {
+                    data: data,
+                    nomeDesconto: nome,
+                    valorTotal: valor
+                });
+
+                const idx = descontosDB.findIndex(d => d.id === idDescontoEdicao);
+                if(idx > -1) {
+                    descontosDB[idx].data = data;
+                    descontosDB[idx].nomeDesconto = nome;
+                    descontosDB[idx].valorTotal = valor;
+                }
+
+                window.fecharModalEditarDesconto();
+                window.atualizarTabelaDescontos();
+            } catch (err) {
+                console.error(err); alert("Erro ao atualizar desconto.");
+            } finally {
+                document.getElementById('loading-global').style.display = 'none';
+            }
+        };
+
+        window.excluirDesconto = async function(id) {
+            if(confirm("Deseja apagar este desconto permanentemente? O valor será removido do relatório dos funcionários.")) {
+                try {
+                    document.getElementById('loading-global').style.display = 'flex';
+                    await deleteDoc(doc(db, "producao_descontos", id));
+                    descontosDB = descontosDB.filter(d => d.id !== id);
+                    window.atualizarInterfaces(); // Para forçar atualização do select de meses caso fique vazio
+                } catch (e) {
+                    console.error(e); alert("Erro ao excluir desconto.");
+                } finally { document.getElementById('loading-global').style.display = 'none'; }
+            }
+        };
+
+        // --- LANÇAR ROTAS ---
         window.lancarRota = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-salvar-rota');
@@ -892,7 +1157,7 @@
                 };
 
                 const docRef = await addDoc(collection(db, "producao_lancamentos"), novoRegisto);
-                lancamentosDB.push({ id: docRef.id, ...novoRegisto });
+                lancamentosDB.unshift({ id: docRef.id, ...novoRegisto }); 
                 
                 document.getElementById('lanc-qtd').value = 1;
                 document.getElementById('lanc-valor').value = '';
@@ -900,6 +1165,7 @@
                 document.getElementById('lanc-veiculo').value = '';
                 
                 window.atualizarInterfaces();
+                alert("Rota registada com sucesso!");
             } catch (err) {
                 console.error(err);
                 alert("Erro ao lançar rota. Verifique os dados.");
@@ -908,7 +1174,55 @@
             }
         };
 
-        // --- FUNÇÕES DE PAGAMENTO ---
+        // --- LANÇAR DESCONTOS ---
+        window.lancarDesconto = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-salvar-desconto');
+            btn.disabled = true; btn.innerText = "A processar...";
+
+            try {
+                const data = document.getElementById('desc-data').value;
+                const idFunc = document.getElementById('desc-funcionario').value;
+                const nome = document.getElementById('desc-nome').value;
+                const valorStr = document.getElementById('desc-valor').value;
+
+                const func = funcionariosDB.find(f => f.id === idFunc);
+                if(!func) throw new Error("Funcionário inválido.");
+
+                const valor = window.converterMoedaParaFloat(valorStr);
+                if(valor <= 0) {
+                    alert("O valor do desconto deve ser maior que zero.");
+                    btn.disabled = false; btn.innerText = "Processar Desconto";
+                    return;
+                }
+
+                const novoDesc = {
+                    tipo: 'desconto',
+                    data: data,
+                    idFuncionario: idFunc,
+                    nomeFuncionario: `${func.nome} ${func.sobrenome || ''}`.trim(),
+                    nomeDesconto: nome,
+                    valorTotal: valor,
+                    criadoEm: new Date().toISOString()
+                };
+
+                const docRef = await addDoc(collection(db, "producao_descontos"), novoDesc);
+                descontosDB.unshift({ id: docRef.id, ...novoDesc }); // Atualiza a memória
+                
+                document.getElementById('desc-nome').value = '';
+                document.getElementById('desc-valor').value = '';
+                window.atualizarInterfaces(); // Força atualização dos filtros de mês se necessário
+                alert("Desconto lançado e armazenado na Cloud com sucesso!");
+                
+            } catch(err) {
+                console.error(err);
+                alert("Erro ao lançar desconto.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Processar Desconto";
+            }
+        };
+
+        // --- FUNÇÕES DE PAGAMENTO DE ROTAS ---
         window.abrirModalPagamento = function(idLancamento) {
             idParaPagamento = idLancamento;
             document.getElementById('modal-data-input').value = new Date().toISOString().split('T')[0];
@@ -994,7 +1308,7 @@
         };
 
         // --- GERAÇÃO DE RELATÓRIO ---
-        window.gerarRelatorioTela = function(e) {
+        window.gerarRelatorioTela = async function(e) {
             e.preventDefault();
             const idFunc = document.getElementById('filtro-funcionario').value;
             const dataIn = document.getElementById('filtro-data-inicio').value;
@@ -1002,56 +1316,100 @@
 
             const func = funcionariosDB.find(f => f.id === idFunc);
             
-            const filtrados = lancamentosDB.filter(l => {
-                return l.idFuncionario === idFunc && l.data >= dataIn && l.data <= dataFim;
-            }).sort((a,b) => a.data.localeCompare(b.data));
+            document.getElementById('loading-global').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "A extrair relatório da nuvem...";
 
-            const tbRel = document.getElementById('tabela-relatorio');
-            tbRel.innerHTML = '';
-            
-            let somaGeral = 0;
-            let somaPago = 0;
-            let somaAberto = 0;
+            try {
+                let filtrados = [];
 
-            filtrados.forEach(l => {
-                somaGeral += l.valorTotal;
-                if(l.statusPagamento === 'Sim') somaPago += l.valorTotal;
-                else somaAberto += l.valorTotal;
+                // 1. Busca Rotas do Funcionário
+                const qLanc = query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc));
+                const snapLanc = await getDocs(qLanc);
+                snapLanc.forEach(d => {
+                    const l = {id: d.id, ...d.data(), tipo: 'rota'};
+                    if(l.data >= dataIn && l.data <= dataFim) filtrados.push(l);
+                });
 
-                const statusTxt = l.statusPagamento === 'Sim' ? 'PAGO' : 'PENDENTE';
-                const corStatus = l.statusPagamento === 'Sim' ? 'color: var(--success);' : 'color: var(--danger);';
+                // 2. Busca Descontos do Funcionário
+                const qDesc = query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc));
+                const snapDesc = await getDocs(qDesc);
+                snapDesc.forEach(d => {
+                    const desc = {id: d.id, ...d.data(), tipo: 'desconto'};
+                    if(desc.data >= dataIn && desc.data <= dataFim) filtrados.push(desc);
+                });
 
-                tbRel.innerHTML += `
-                    <tr>
-                        <td>${formatarData(l.data)}</td>
-                        <td>${l.qtd} rotas</td>
-                        <td>${formatarMoeda(l.valorUnitario)}</td>
-                        <td style="font-weight:bold;">${formatarMoeda(l.valorTotal)}</td>
-                        <td style="font-weight:bold; font-size:11px; ${corStatus}">${statusTxt}</td>
-                    </tr>`;
-            });
+                // Ordena tudo por data
+                filtrados.sort((a,b) => a.data.localeCompare(b.data));
 
-            if(filtrados.length === 0) {
-                tbRel.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma rota registada neste período.</td></tr>';
+                const tbRel = document.getElementById('tabela-relatorio');
+                tbRel.innerHTML = '';
+                
+                let somaProduzido = 0;
+                let somaPago = 0;
+                let somaDescontos = 0;
+                let somaPendente = 0;
+
+                filtrados.forEach(item => {
+                    if(item.tipo === 'rota') {
+                        somaProduzido += item.valorTotal;
+                        
+                        if(item.statusPagamento === 'Sim') somaPago += item.valorTotal;
+                        else somaPendente += item.valorTotal;
+
+                        const statusTxt = item.statusPagamento === 'Sim' ? 'PAGO' : 'PENDENTE';
+                        const corStatus = item.statusPagamento === 'Sim' ? 'color: var(--success);' : 'color: var(--danger);';
+
+                        tbRel.innerHTML += `
+                            <tr>
+                                <td>${formatarData(item.data)}</td>
+                                <td>${item.qtd} rotas</td>
+                                <td>${formatarMoeda(item.valorUnitario)}</td>
+                                <td style="font-weight:bold;">${formatarMoeda(item.valorTotal)}</td>
+                                <td style="font-weight:bold; font-size:11px; ${corStatus}">${statusTxt}</td>
+                            </tr>`;
+                    } else if (item.tipo === 'desconto') {
+                        somaDescontos += item.valorTotal;
+                        tbRel.innerHTML += `
+                            <tr style="background: var(--danger-pale);">
+                                <td style="color: var(--danger);">${formatarData(item.data)}</td>
+                                <td colspan="2" style="color: var(--danger);"><strong>DESCONTO:</strong> ${item.nomeDesconto}</td>
+                                <td style="color: var(--danger); font-weight:bold;">- ${formatarMoeda(item.valorTotal)}</td>
+                                <td style="font-weight:bold; font-size:11px; color: var(--danger);">ABATIDO</td>
+                            </tr>`;
+                    }
+                });
+
+                if(filtrados.length === 0) {
+                    tbRel.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum registo de produção ou desconto neste período.</td></tr>';
+                }
+
+                // Cálculo do Total em Aberto (Pendente - Descontos)
+                let totalAberto = somaPendente - somaDescontos;
+
+                document.getElementById('total-relatorio-geral').innerText = formatarMoeda(somaProduzido);
+                document.getElementById('total-relatorio-pago').innerText = formatarMoeda(somaPago);
+                document.getElementById('total-relatorio-desconto').innerText = "- " + formatarMoeda(somaDescontos);
+                document.getElementById('total-relatorio-aberto').innerText = formatarMoeda(totalAberto);
+                
+                document.getElementById('resultado-relatorio').style.display = 'block';
+
+                dadosRelatorioAtual = {
+                    nome: `${func.nome} ${func.sobrenome || ''}`.trim(),
+                    funcao: func.funcao,
+                    periodo: `${formatarData(dataIn)} a ${formatarData(dataFim)}`,
+                    lancamentos: filtrados,
+                    totalProduzido: somaProduzido,
+                    totalPago: somaPago,
+                    totalDesconto: somaDescontos,
+                    totalAberto: totalAberto
+                };
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao extrair relatório.");
+            } finally {
+                document.getElementById('loading-global').style.display = 'none';
             }
-
-            // Atualiza os painéis de Totais na tela
-            document.getElementById('total-relatorio-geral').innerText = formatarMoeda(somaGeral);
-            document.getElementById('total-relatorio-pago').innerText = formatarMoeda(somaPago);
-            document.getElementById('total-relatorio-aberto').innerText = formatarMoeda(somaAberto);
-            
-            document.getElementById('resultado-relatorio').style.display = 'block';
-
-            // Guarda dados para PDF
-            dadosRelatorioAtual = {
-                nome: `${func.nome} ${func.sobrenome || ''}`.trim(),
-                funcao: func.funcao,
-                periodo: `${formatarData(dataIn)} a ${formatarData(dataFim)}`,
-                lancamentos: filtrados,
-                totalGeral: somaGeral,
-                totalPago: somaPago,
-                totalAberto: somaAberto
-            };
         };
 
         window.imprimirPDF = function() {
@@ -1060,22 +1418,33 @@
             document.getElementById('print-funcao').innerText = dadosRelatorioAtual.funcao;
             document.getElementById('print-periodo').innerText = dadosRelatorioAtual.periodo;
             
-            document.getElementById('print-total-valor').innerText = formatarMoeda(dadosRelatorioAtual.totalGeral);
+            document.getElementById('print-total-valor').innerText = formatarMoeda(dadosRelatorioAtual.totalProduzido);
             document.getElementById('print-total-pago').innerText = formatarMoeda(dadosRelatorioAtual.totalPago);
+            document.getElementById('print-total-desconto').innerText = "- " + formatarMoeda(dadosRelatorioAtual.totalDesconto);
             document.getElementById('print-total-aberto').innerText = formatarMoeda(dadosRelatorioAtual.totalAberto);
             
             const tb = document.getElementById('print-tbody');
             tb.innerHTML = '';
-            dadosRelatorioAtual.lancamentos.forEach(l => {
-                const statusTxt = l.statusPagamento === 'Sim' ? 'PAGO' : 'PENDENTE';
-                tb.innerHTML += `
-                    <tr>
-                        <td>${formatarData(l.data)}</td>
-                        <td>${l.qtd}</td>
-                        <td>${formatarMoeda(l.valorUnitario)}</td>
-                        <td>${formatarMoeda(l.valorTotal)}</td>
-                        <td>${statusTxt}</td>
-                    </tr>`;
+            dadosRelatorioAtual.lancamentos.forEach(item => {
+                if(item.tipo === 'rota') {
+                    const statusTxt = item.statusPagamento === 'Sim' ? 'PAGO' : 'PENDENTE';
+                    tb.innerHTML += `
+                        <tr>
+                            <td>${formatarData(item.data)}</td>
+                            <td>${item.qtd}</td>
+                            <td>${formatarMoeda(item.valorUnitario)}</td>
+                            <td>${formatarMoeda(item.valorTotal)}</td>
+                            <td>${statusTxt}</td>
+                        </tr>`;
+                } else if(item.tipo === 'desconto') {
+                    tb.innerHTML += `
+                        <tr style="background-color: #fff0f0;">
+                            <td>${formatarData(item.data)}</td>
+                            <td colspan="2">DESCONTO: ${item.nomeDesconto}</td>
+                            <td style="color: red;">- ${formatarMoeda(item.valorTotal)}</td>
+                            <td>ABATIDO</td>
+                        </tr>`;
+                }
             });
             window.print();
         };
