@@ -456,6 +456,35 @@
             position: absolute;
             bottom: 3px;
         }
+        /* DIA PINTADO COM DESCONTO LANÇADO */
+        .cal-day.has-discount {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+            font-weight: 700;
+            box-shadow: inset 0 0 0 1px rgba(216, 148, 51, 0.28);
+        }
+        .cal-day.has-discount::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--warning);
+            position: absolute;
+            bottom: 3px;
+        }
+        /* DIA COM ROTA EM ABERTO E DESCONTO NO MESMO DIA */
+        .cal-day.open-route.has-discount {
+            background: linear-gradient(135deg, #fee2e2 50%, #fef3c7 50%);
+            border-color: #f59e0b;
+            color: #991b1b;
+        }
+        .cal-day.open-route.has-discount::after {
+            left: calc(50% - 4px);
+        }
+        .cal-day.open-route.has-discount::before {
+            left: calc(50% + 2px);
+        }
         .cal-day.selected {
             background: var(--brand) !important;
             color: #fff !important;
@@ -466,6 +495,12 @@
             box-shadow: 0 0 0 2px var(--danger) !important;
         }
         .cal-day.selected.open-route::after {
+            background: #fff;
+        }
+        .cal-day.selected.has-discount {
+            box-shadow: 0 0 0 2px var(--warning) !important;
+        }
+        .cal-day.selected.has-discount::before {
             background: #fff;
         }
         .cal-legend {
@@ -493,6 +528,10 @@
         .cal-swatch.open {
             background: #fee2e2;
             border: 1px solid #f87171;
+        }
+        .cal-swatch.discount {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
         }
         .cal-swatch.sel {
             background: var(--brand);
@@ -1115,6 +1154,15 @@
                                         <h3 style="font-family: 'Space Grotesk'; font-size: 24px; color: var(--danger);" id="total-relatorio-aberto">R$ 0,00</h3>
                                     </div>
                                 </div>
+                                <!-- AÇÃO DE PAGAMENTO DO RECIBO (INTEGRAÇÃO COM VISÃO GERAL & LANÇAMENTOS) -->
+                                <div class="card-body" style="background: #eef9f8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-top: 1px solid var(--line); border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md);">
+                                    <div id="resumo-pagamento-recibo" style="font-size: 13px; color: var(--ink-2); font-weight: 600;">
+                                        Baixe todos os lançamentos pendentes deste recibo diretamente por aqui.
+                                    </div>
+                                    <button type="button" class="btn btn-success" id="btn-pagar-recibo" onclick="window.abrirModalPagamentoRecibo()" style="min-width: 200px;">
+                                        💳 Pagar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1382,6 +1430,7 @@
             fim: { ano: new Date().getFullYear(), mes: new Date().getMonth() }
         };
         let mapaDiasAbertosFunc = {}; // { 'YYYY-MM-DD': { qtdRotas: 0, valorTotal: 0, countLanc: 0 } }
+        let mapaDiasDescontosFunc = {}; // { 'YYYY-MM-DD': { qtdDescontos: 0, valorTotal: 0, motivos: [] } }
         let acaoConfirmacaoPendente = null;
 
         const NOMES_MESES = [
@@ -2509,6 +2558,34 @@
             document.getElementById('modal-pagamento').style.display = 'flex';
         };
 
+        window.abrirModalPagamentoRecibo = function() {
+            if (!dadosRelatorioAtual || !Array.isArray(dadosRelatorioAtual.lancamentos)) {
+                window.mostrarNotificacao("Gere um recibo primeiro para efetuar o pagamento.", "warning");
+                return;
+            }
+            const pendentesRecibo = dadosRelatorioAtual.lancamentos.filter(item => item.tipo === 'rota' && item.statusPagamento !== 'Sim');
+            if (pendentesRecibo.length === 0) {
+                window.mostrarNotificacao("Não há lançamentos pendentes neste recibo para baixar.", "warning");
+                return;
+            }
+
+            idsParaPagamento = pendentesRecibo.map(item => item.id);
+            const somaRotas = pendentesRecibo.reduce((acc, l) => acc + (Number(l.qtd) || 0), 0);
+            const valorLiquido = dadosRelatorioAtual.totalAberto !== undefined
+                ? dadosRelatorioAtual.totalAberto
+                : pendentesRecibo.reduce((acc, l) => acc + (Number(l.valorTotal) || 0), 0);
+
+            const periodoTxt = (dadosRelatorioAtual.dataInicio && dadosRelatorioAtual.dataFim)
+                ? `${formatarData(dadosRelatorioAtual.dataInicio)} a ${formatarData(dadosRelatorioAtual.dataFim)}`
+                : (dadosRelatorioAtual.periodo || '');
+
+            document.getElementById('modal-pagamento-titulo').innerText = `Pagar Recibo — ${dadosRelatorioAtual.nome || 'Funcionário'}`;
+            document.getElementById('modal-pagamento-resumo').innerText =
+                `Confirme a data do pagamento para baixar os ${pendentesRecibo.length} lançamento(s) (${somaRotas} rota(s)) do período de ${periodoTxt} (A Receber: ${formatarMoeda(valorLiquido)}). Todos serão baixados automaticamente na aba Visão Geral & Lançamentos:`;
+            document.getElementById('modal-data-input').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-pagamento').style.display = 'flex';
+        };
+
         window.fecharModalPagamento = function() {
             idsParaPagamento = [];
             document.getElementById('modal-pagamento').style.display = 'none';
@@ -2524,6 +2601,7 @@
             }
 
             const idsProcessar = [...idsParaPagamento];
+            const setIds = new Set(idsProcessar);
 
             try {
                 document.getElementById('loading-global').style.display = 'flex';
@@ -2544,6 +2622,21 @@
                     }
                     selecionadosLanc.delete(id);
                 });
+
+                // Sincroniza também o recibo aberto na aba Relatórios & Pagamentos, se houver
+                if (dadosRelatorioAtual && Array.isArray(dadosRelatorioAtual.lancamentos)) {
+                    let alterouRecibo = false;
+                    dadosRelatorioAtual.lancamentos.forEach(item => {
+                        if (item.tipo === 'rota' && setIds.has(item.id)) {
+                            item.statusPagamento = 'Sim';
+                            item.dataPagamento = dataPagou;
+                            alterouRecibo = true;
+                        }
+                    });
+                    if (alterouRecibo) {
+                        window.renderizarDadosRelatorioNaTela();
+                    }
+                }
 
                 window.fecharModalPagamento();
                 window.atualizarInterfaces();
@@ -2580,6 +2673,15 @@
                             lancamentosDB[idx].dataPagamento = null;
                         }
                         selecionadosLanc.delete(idLancamento);
+                        if (dadosRelatorioAtual && Array.isArray(dadosRelatorioAtual.lancamentos)) {
+                            dadosRelatorioAtual.lancamentos.forEach(item => {
+                                if (item.tipo === 'rota' && item.id === idLancamento) {
+                                    item.statusPagamento = 'Não';
+                                    item.dataPagamento = null;
+                                }
+                            });
+                            window.renderizarDadosRelatorioNaTela();
+                        }
                         window.atualizarInterfaces();
                         window.mostrarNotificacao("Pagamento desfeito! A rota voltou para Pendente.", "success");
                     } catch (e) {
@@ -2627,6 +2729,16 @@
                             selecionadosLanc.delete(id);
                         });
 
+                        if (dadosRelatorioAtual && Array.isArray(dadosRelatorioAtual.lancamentos)) {
+                            const setDesfazer = new Set(idsDesfazer);
+                            dadosRelatorioAtual.lancamentos.forEach(item => {
+                                if (item.tipo === 'rota' && setDesfazer.has(item.id)) {
+                                    item.statusPagamento = 'Não';
+                                    item.dataPagamento = null;
+                                }
+                            });
+                            window.renderizarDadosRelatorioNaTela();
+                        }
                         window.atualizarInterfaces();
                         window.mostrarNotificacao(`${idsDesfazer.length} pagamento(s) desfeito(s) com sucesso!`, "success");
                     } catch (e) {
@@ -2670,40 +2782,52 @@
             return `${d}/${m}/${a}`;
         };
 
-        // --- CALENDÁRIO CUSTOMIZADO COM DIAS EM ABERTO PINTADOS ---
+        // --- CALENDÁRIO CUSTOMIZADO COM DIAS EM ABERTO E DESCONTOS PINTADOS ---
         window.aoSelecionarFuncionarioRelatorio = async function(preencherDatasAutomatico = false) {
             const idFunc = document.getElementById('filtro-funcionario').value;
             window.renderizarPreviaFuncionarios();
 
             if (idFunc) {
-                // Busca na nuvem todos os lançamentos do funcionário selecionado para garantir 100% de precisão nos dias pintados
+                // Busca na nuvem todos os lançamentos e descontos do funcionário selecionado para garantir 100% de precisão nos dias pintados
                 try {
-                    const qFunc = query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc));
-                    const snap = await getDocs(qFunc);
-                    const mapaLocal = new Map(lancamentosDB.map(l => [l.id, l]));
-                    snap.forEach(d => {
-                        mapaLocal.set(d.id, { id: d.id, ...d.data() });
+                    const [snapLanc, snapDesc] = await Promise.all([
+                        getDocs(query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc))),
+                        getDocs(query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc)))
+                    ]);
+
+                    const mapaLocalLanc = new Map(lancamentosDB.map(l => [l.id, l]));
+                    snapLanc.forEach(d => {
+                        mapaLocalLanc.set(d.id, { id: d.id, ...d.data() });
                     });
-                    lancamentosDB = Array.from(mapaLocal.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+                    lancamentosDB = Array.from(mapaLocalLanc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+
+                    const mapaLocalDesc = new Map(descontosDB.map(d => [d.id, d]));
+                    snapDesc.forEach(d => {
+                        mapaLocalDesc.set(d.id, { id: d.id, ...d.data() });
+                    });
+                    descontosDB = Array.from(mapaLocalDesc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
                 } catch (err) {
-                    console.warn("Usando cache local para dias em aberto:", err);
+                    console.warn("Usando cache local para dias em aberto e descontos:", err);
                 }
             }
 
             window.atualizarMapaDiasAbertosRelatorio();
 
             const datasAbertas = Object.keys(mapaDiasAbertosFunc).sort();
-            if (datasAbertas.length > 0) {
-                const primeiraData = datasAbertas[0];
-                const ultimaData = datasAbertas[datasAbertas.length - 1];
+            const datasDescontos = Object.keys(mapaDiasDescontosFunc).sort();
+            const datasRef = datasAbertas.length > 0 ? datasAbertas : datasDescontos;
+
+            if (datasRef.length > 0) {
+                const primeiraData = datasRef[0];
+                const ultimaData = datasRef[datasRef.length - 1];
                 const [anoIni, mesIni] = primeiraData.split('-').map(Number);
                 const [anoFim, mesFim] = ultimaData.split('-').map(Number);
                 calMesAno.inicio = { ano: anoIni, mes: mesIni - 1 };
                 calMesAno.fim = { ano: anoFim, mes: mesFim - 1 };
 
-                if (preencherDatasAutomatico) {
-                    window.definirDataCalendario('inicio', primeiraData, false);
-                    window.definirDataCalendario('fim', ultimaData, false);
+                if (preencherDatasAutomatico && datasAbertas.length > 0) {
+                    window.definirDataCalendario('inicio', datasAbertas[0], false);
+                    window.definirDataCalendario('fim', datasAbertas[datasAbertas.length - 1], false);
                 }
             }
 
@@ -2714,12 +2838,13 @@
 
         window.atualizarMapaDiasAbertosRelatorio = function() {
             mapaDiasAbertosFunc = {};
+            mapaDiasDescontosFunc = {};
             const idFunc = document.getElementById('filtro-funcionario')?.value;
             const infoEl = document.getElementById('info-dias-abertos-func');
             const btnPreencher = document.getElementById('btn-preencher-periodo-aberto');
 
             if (!idFunc) {
-                if (infoEl) infoEl.innerHTML = 'Selecione um funcionário para visualizar pintados no calendário os dias em que ele possui rotas em aberto.';
+                if (infoEl) infoEl.innerHTML = 'Selecione um funcionário para visualizar pintados no calendário os dias com rotas em aberto e os dias com descontos lançados.';
                 if (btnPreencher) btnPreencher.style.display = 'none';
                 return;
             }
@@ -2740,23 +2865,52 @@
                 }
             });
 
+            let totalValorDescontos = 0;
+            let totalQtdDescontos = 0;
+
+            descontosDB.forEach(d => {
+                if (d.idFuncionario === idFunc && d.data) {
+                    if (!mapaDiasDescontosFunc[d.data]) {
+                        mapaDiasDescontosFunc[d.data] = { qtdDescontos: 0, valorTotal: 0, motivos: [] };
+                    }
+                    mapaDiasDescontosFunc[d.data].qtdDescontos += 1;
+                    mapaDiasDescontosFunc[d.data].valorTotal += (Number(d.valorTotal) || 0);
+                    if (d.nomeDesconto) mapaDiasDescontosFunc[d.data].motivos.push(d.nomeDesconto);
+                    totalValorDescontos += (Number(d.valorTotal) || 0);
+                    totalQtdDescontos += 1;
+                }
+            });
+
             const datasAbertas = Object.keys(mapaDiasAbertosFunc).sort();
+            const datasDescontos = Object.keys(mapaDiasDescontosFunc).sort();
+
             if (infoEl) {
+                let partesHtml = [];
                 if (datasAbertas.length > 0) {
-                    infoEl.innerHTML = `<span style="color: var(--danger); font-weight: 700;">🔴 ${datasAbertas.length} dia(s) com rotas em aberto</span> (${totalRotasAbertas} rota(s) — ${formatarMoeda(totalValorAberto)}) de <strong>${formatarData(datasAbertas[0])}</strong> até <strong>${formatarData(datasAbertas[datasAbertas.length - 1])}</strong>. Abra os calendários abaixo para ver os dias pintados.`;
+                    partesHtml.push(`<span style="color: var(--danger); font-weight: 700;">🔴 ${datasAbertas.length} dia(s) com rotas em aberto</span> (${totalRotasAbertas} rota(s) — ${formatarMoeda(totalValorAberto)}) de <strong>${formatarData(datasAbertas[0])}</strong> até <strong>${formatarData(datasAbertas[datasAbertas.length - 1])}</strong>`);
                     if (btnPreencher) btnPreencher.style.display = 'inline-flex';
                 } else {
-                    infoEl.innerHTML = `<span style="color: var(--success); font-weight: 700;">✓ Este funcionário não possui rotas em aberto no momento.</span>`;
+                    partesHtml.push(`<span style="color: var(--success); font-weight: 700;">✓ Nenhuma rota em aberto no momento</span>`);
                     if (btnPreencher) btnPreencher.style.display = 'none';
                 }
+
+                if (datasDescontos.length > 0) {
+                    partesHtml.push(`<span style="color: #b45309; font-weight: 700;">🟠 ${datasDescontos.length} dia(s) com desconto lançado</span> (${totalQtdDescontos} desconto(s) — ${formatarMoeda(totalValorDescontos)})`);
+                }
+
+                infoEl.innerHTML = partesHtml.join(' &nbsp;|&nbsp; ') + '. Abra os calendários abaixo para ver os dias destacados.';
             }
         };
 
         window.preencherPeriodoEmAberto = function() {
             const datasAbertas = Object.keys(mapaDiasAbertosFunc).sort();
-            if (datasAbertas.length === 0) return;
-            window.definirDataCalendario('inicio', datasAbertas[0], false);
-            window.definirDataCalendario('fim', datasAbertas[datasAbertas.length - 1], false);
+            const datasDescontos = Object.keys(mapaDiasDescontosFunc).sort();
+            const todasDatas = Array.from(new Set([...datasAbertas, ...datasDescontos])).sort();
+            if (todasDatas.length === 0) return;
+            const ini = datasAbertas.length > 0 ? datasAbertas[0] : todasDatas[0];
+            const fim = datasAbertas.length > 0 ? datasAbertas[datasAbertas.length - 1] : todasDatas[todasDatas.length - 1];
+            window.definirDataCalendario('inicio', ini, false);
+            window.definirDataCalendario('fim', fim, false);
             window.fecharCalendariosCustom();
             window.mostrarNotificacao("Período preenchido com o 1º e o último dia em aberto!", "info");
         };
@@ -2785,8 +2939,10 @@
                 calMesAno[tipo] = { ano: a, mes: m - 1 };
             } else {
                 const datasAbertas = Object.keys(mapaDiasAbertosFunc).sort();
-                if (datasAbertas.length > 0) {
-                    const refData = tipo === 'inicio' ? datasAbertas[0] : datasAbertas[datasAbertas.length - 1];
+                const datasDescontos = Object.keys(mapaDiasDescontosFunc).sort();
+                const datasRef = datasAbertas.length > 0 ? datasAbertas : datasDescontos;
+                if (datasRef.length > 0) {
+                    const refData = tipo === 'inicio' ? datasRef[0] : datasRef[datasRef.length - 1];
                     const [a, m] = refData.split('-').map(Number);
                     calMesAno[tipo] = { ano: a, mes: m - 1 };
                 }
@@ -2891,6 +3047,7 @@
                 const dataISO = `${ano}-${mesStr}-${diaStr}`;
 
                 const infoAberto = mapaDiasAbertosFunc[dataISO];
+                const infoDesconto = mapaDiasDescontosFunc[dataISO];
                 const isSelected = valorProprio === dataISO;
                 const isToday = hojeISO === dataISO;
                 const isInRange = (dataIniSel && dataFimSel && dataISO >= dataIniSel && dataISO <= dataFimSel);
@@ -2899,10 +3056,19 @@
                 if (isToday) classes.push('today');
                 if (isInRange) classes.push('in-range');
                 if (infoAberto) classes.push('open-route');
+                if (infoDesconto) classes.push('has-discount');
                 if (isSelected) classes.push('selected');
 
-                const tooltip = infoAberto
-                    ? `EM ABERTO: ${infoAberto.qtdRotas} rota(s) — ${formatarMoeda(infoAberto.valorTotal)}`
+                let tooltipParts = [];
+                if (infoAberto) {
+                    tooltipParts.push(`EM ABERTO: ${infoAberto.qtdRotas} rota(s) — ${formatarMoeda(infoAberto.valorTotal)}`);
+                }
+                if (infoDesconto) {
+                    const motivosTxt = infoDesconto.motivos.length > 0 ? ` (${infoDesconto.motivos.join(', ')})` : '';
+                    tooltipParts.push(`DESCONTO: ${infoDesconto.qtdDescontos} lançamento(s)${motivosTxt} — -${formatarMoeda(infoDesconto.valorTotal)}`);
+                }
+                const tooltip = tooltipParts.length > 0
+                    ? tooltipParts.join(' | ')
                     : `Selecionar ${formatarData(dataISO)}`;
 
                 htmlDias += `
@@ -2930,7 +3096,11 @@
                 <div class="cal-legend">
                     <div class="cal-legend-item">
                         <span class="cal-swatch open"></span>
-                        <span><strong>Dia pintado:</strong> rota(s) em aberto deste funcionário</span>
+                        <span><strong>Dia em vermelho:</strong> rota(s) em aberto deste funcionário</span>
+                    </div>
+                    <div class="cal-legend-item">
+                        <span class="cal-swatch discount"></span>
+                        <span><strong>Dia em amarelo:</strong> desconto(s) lançado(s) para este funcionário</span>
                     </div>
                     <div class="cal-legend-item">
                         <span class="cal-swatch sel"></span>
@@ -2968,6 +3138,91 @@
             window.renderizarPreviaFuncionarios();
         };
 
+        window.renderizarDadosRelatorioNaTela = function() {
+            if (!dadosRelatorioAtual || !Array.isArray(dadosRelatorioAtual.lancamentos)) return;
+            const filtrados = dadosRelatorioAtual.lancamentos;
+            const tbRel = document.getElementById('tabela-relatorio');
+            if (!tbRel) return;
+            tbRel.innerHTML = '';
+
+            let somaProduzido = 0;
+            let somaPago = 0;
+            let somaDescontos = 0;
+            let somaPendente = 0;
+            let qtdLancPendentes = 0;
+            let qtdRotasPendentes = 0;
+
+            filtrados.forEach(item => {
+                if (item.tipo === 'rota') {
+                    const val = Number(item.valorTotal) || 0;
+                    somaProduzido += val;
+
+                    if (item.statusPagamento === 'Sim') {
+                        somaPago += val;
+                    } else {
+                        somaPendente += val;
+                        qtdLancPendentes += 1;
+                        qtdRotasPendentes += (Number(item.qtd) || 0);
+                    }
+
+                    const statusTxt = item.statusPagamento === 'Sim'
+                        ? (item.dataPagamento ? `PAGO EM ${formatarData(item.dataPagamento)}` : 'PAGO')
+                        : 'PENDENTE';
+                    const corStatus = item.statusPagamento === 'Sim' ? 'color: var(--success);' : 'color: var(--danger);';
+
+                    tbRel.innerHTML += `
+                        <tr>
+                            <td>${formatarData(item.data)}</td>
+                            <td>${item.qtd} rotas</td>
+                            <td>${formatarMoeda(item.valorUnitario)}</td>
+                            <td style="font-weight:bold;">${formatarMoeda(item.valorTotal)}</td>
+                            <td style="font-weight:bold; font-size:11px; ${corStatus}">${statusTxt}</td>
+                        </tr>`;
+                } else if (item.tipo === 'desconto') {
+                    const valDesc = Number(item.valorTotal) || 0;
+                    somaDescontos += valDesc;
+                    tbRel.innerHTML += `
+                        <tr style="background: var(--danger-pale);">
+                            <td style="color: var(--danger);">${formatarData(item.data)}</td>
+                            <td colspan="2" style="color: var(--danger);"><strong>DESCONTO:</strong> ${item.nomeDesconto}</td>
+                            <td style="color: var(--danger); font-weight:bold;">- ${formatarMoeda(item.valorTotal)}</td>
+                            <td style="font-weight:bold; font-size:11px; color: var(--danger);">ABATIDO</td>
+                        </tr>`;
+                }
+            });
+
+            if (filtrados.length === 0) {
+                tbRel.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum registo encontrado neste período para o status selecionado.</td></tr>';
+            }
+
+            const totalAberto = Math.max(0, somaPendente - somaDescontos);
+
+            dadosRelatorioAtual.totalProduzido = somaProduzido;
+            dadosRelatorioAtual.totalPago = somaPago;
+            dadosRelatorioAtual.totalDesconto = somaDescontos;
+            dadosRelatorioAtual.totalAberto = totalAberto;
+
+            document.getElementById('total-relatorio-geral').innerText = formatarMoeda(somaProduzido);
+            document.getElementById('total-relatorio-pago').innerText = formatarMoeda(somaPago);
+            document.getElementById('total-relatorio-desconto').innerText = "- " + formatarMoeda(somaDescontos);
+            document.getElementById('total-relatorio-aberto').innerText = formatarMoeda(totalAberto);
+
+            const btnPagarRecibo = document.getElementById('btn-pagar-recibo');
+            const resumoPagRecibo = document.getElementById('resumo-pagamento-recibo');
+
+            if (btnPagarRecibo && resumoPagRecibo) {
+                if (qtdLancPendentes > 0) {
+                    btnPagarRecibo.disabled = false;
+                    btnPagarRecibo.innerText = `💳 Pagar (${formatarMoeda(totalAberto)})`;
+                    resumoPagRecibo.innerHTML = `<span style="color: var(--brand-dark);">● <strong>${qtdLancPendentes} lançamento(s) pendente(s)</strong> (${qtdRotasPendentes} rota(s)) neste recibo.</span> Ao confirmar o pagamento, todos serão baixados na aba <strong>Visão Geral & Lançamentos</strong>.`;
+                } else {
+                    btnPagarRecibo.disabled = true;
+                    btnPagarRecibo.innerText = `✓ Recibo Pago`;
+                    resumoPagRecibo.innerHTML = `<span style="color: var(--success);">✓ Todos os lançamentos de rotas deste recibo já constam como pagos.</span>`;
+                }
+            }
+        };
+
         window.gerarRelatorioTela = async function(e) {
             if (e) e.preventDefault();
             const idFunc = document.getElementById('filtro-funcionario').value;
@@ -2991,8 +3246,12 @@
                 // 1. Busca Rotas do Funcionário respeitando Data Inicial, Data Final e Status do Pagamento
                 const qLanc = query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc));
                 const snapLanc = await getDocs(qLanc);
+                const mapaLocalLanc = new Map(lancamentosDB.map(l => [l.id, l]));
+
                 snapLanc.forEach(d => {
-                    const l = {id: d.id, ...d.data(), tipo: 'rota'};
+                    const dadosDoc = { id: d.id, ...d.data() };
+                    mapaLocalLanc.set(d.id, dadosDoc);
+                    const l = { ...dadosDoc, tipo: 'rota' };
                     if (l.data >= dataIn && l.data <= dataFim) {
                         const isPago = l.statusPagamento === 'Sim';
                         if (statusFiltro === 'Tudo') {
@@ -3004,82 +3263,44 @@
                         }
                     }
                 });
+                lancamentosDB = Array.from(mapaLocalLanc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
                 // 2. Busca Descontos do Funcionário no período
                 const qDesc = query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc));
                 const snapDesc = await getDocs(qDesc);
+                const mapaLocalDesc = new Map(descontosDB.map(d => [d.id, d]));
+
                 snapDesc.forEach(d => {
-                    const desc = {id: d.id, ...d.data(), tipo: 'desconto'};
+                    const dadosDesc = { id: d.id, ...d.data() };
+                    mapaLocalDesc.set(d.id, dadosDesc);
+                    const desc = { ...dadosDesc, tipo: 'desconto' };
                     if(desc.data >= dataIn && desc.data <= dataFim) filtrados.push(desc);
                 });
+                descontosDB = Array.from(mapaLocalDesc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
                 // Ordena tudo por data
                 filtrados.sort((a,b) => a.data.localeCompare(b.data));
 
-                const tbRel = document.getElementById('tabela-relatorio');
-                tbRel.innerHTML = '';
-                
-                let somaProduzido = 0;
-                let somaPago = 0;
-                let somaDescontos = 0;
-                let somaPendente = 0;
-
-                filtrados.forEach(item => {
-                    if(item.tipo === 'rota') {
-                        somaProduzido += item.valorTotal;
-                        
-                        if(item.statusPagamento === 'Sim') somaPago += item.valorTotal;
-                        else somaPendente += item.valorTotal;
-
-                        const statusTxt = item.statusPagamento === 'Sim' ? 'PAGO' : 'PENDENTE';
-                        const corStatus = item.statusPagamento === 'Sim' ? 'color: var(--success);' : 'color: var(--danger);';
-
-                        tbRel.innerHTML += `
-                            <tr>
-                                <td>${formatarData(item.data)}</td>
-                                <td>${item.qtd} rotas</td>
-                                <td>${formatarMoeda(item.valorUnitario)}</td>
-                                <td style="font-weight:bold;">${formatarMoeda(item.valorTotal)}</td>
-                                <td style="font-weight:bold; font-size:11px; ${corStatus}">${statusTxt}</td>
-                            </tr>`;
-                    } else if (item.tipo === 'desconto') {
-                        somaDescontos += item.valorTotal;
-                        tbRel.innerHTML += `
-                            <tr style="background: var(--danger-pale);">
-                                <td style="color: var(--danger);">${formatarData(item.data)}</td>
-                                <td colspan="2" style="color: var(--danger);"><strong>DESCONTO:</strong> ${item.nomeDesconto}</td>
-                                <td style="color: var(--danger); font-weight:bold;">- ${formatarMoeda(item.valorTotal)}</td>
-                                <td style="font-weight:bold; font-size:11px; color: var(--danger);">ABATIDO</td>
-                            </tr>`;
-                    }
-                });
-
-                if(filtrados.length === 0) {
-                    tbRel.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum registo encontrado neste período para o status selecionado.</td></tr>';
-                }
-
-                // Cálculo do Total em Aberto (Pendente - Descontos), garantindo que nunca fique negativo
-                let totalAberto = Math.max(0, somaPendente - somaDescontos);
-
-                document.getElementById('total-relatorio-geral').innerText = formatarMoeda(somaProduzido);
-                document.getElementById('total-relatorio-pago').innerText = formatarMoeda(somaPago);
-                document.getElementById('total-relatorio-desconto').innerText = "- " + formatarMoeda(somaDescontos);
-                document.getElementById('total-relatorio-aberto').innerText = formatarMoeda(totalAberto);
-                
-                document.getElementById('resultado-relatorio').style.display = 'block';
-
                 const labelStatus = statusFiltro === 'Não' ? 'Em Aberto' : (statusFiltro === 'Sim' ? 'Pago' : 'Tudo');
 
                 dadosRelatorioAtual = {
+                    idFuncionario: idFunc,
+                    dataInicio: dataIn,
+                    dataFim: dataFim,
+                    statusFiltro: statusFiltro,
                     nome: func ? `${func.nome} ${func.sobrenome || ''}`.trim() : 'Funcionário',
                     funcao: func ? func.funcao : '-',
                     periodo: `${formatarData(dataIn)} a ${formatarData(dataFim)} (Status: ${labelStatus})`,
                     lancamentos: filtrados,
-                    totalProduzido: somaProduzido,
-                    totalPago: somaPago,
-                    totalDesconto: somaDescontos,
-                    totalAberto: totalAberto
+                    totalProduzido: 0,
+                    totalPago: 0,
+                    totalDesconto: 0,
+                    totalAberto: 0
                 };
+
+                window.renderizarDadosRelatorioNaTela();
+                document.getElementById('resultado-relatorio').style.display = 'block';
+                window.atualizarInterfaces();
 
             } catch (err) {
                 console.error(err);
