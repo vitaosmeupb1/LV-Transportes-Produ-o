@@ -2547,7 +2547,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy, limit, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, writeBatch, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy, limit, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -2561,7 +2561,16 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let db;
+        try {
+            db = initializeFirestore(app, {
+                localCache: persistentLocalCache({
+                    tabManager: persistentMultipleTabManager()
+                })
+            });
+        } catch (errCache) {
+            db = getFirestore(app);
+        }
         const auth = getAuth(app);
         setPersistence(auth, browserSessionPersistence).catch(console.error);
 
@@ -2901,6 +2910,12 @@
                 });
         };
 
+        // Caches de sessão para evitar leituras repetidas no Firebase
+        let funcionariosHistoricoCarregado = new Set();
+        let periodosDashConsultados = new Set();
+        let timerPausaInatividade = null;
+        let listenersPausadosPorInatividade = false;
+
         function limparListenersTempoReal() {
             listenersTempoReal.forEach(unsub => {
                 try { if (typeof unsub === 'function') unsub(); } catch (e) {}
@@ -2909,11 +2924,130 @@
             carregamentoInicialConcluido = false;
         }
 
+        function ativarListenersEssenciaisTempoReal() {
+            limparListenersTempoReal();
+            const { inicioMesAnteriorISO } = obterLimitesMesAnteriorEAtual();
+
+            // 1. Listener em tempo real focado apenas nas rotas desde o início do mês anterior (evita ler centenas de rotas antigas já pagas)
+            const qLancRecentesRT = query(
+                collection(db, "producao_lancamentos"),
+                where("data", ">=", inicioMesAnteriorISO)
+            );
+            const unsubLancRecentes = onSnapshot(qLancRecentesRT, (snapshot) => {
+                let houveInclusaoRemota = false;
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'removed') {
+                        mapaLancRecentes.delete(change.doc.id);
+                        mapaLancPendentes.delete(change.doc.id);
+                        mapaLancExtras.delete(change.doc.id);
+                    } else {
+                        const dados = { id: change.doc.id, ...change.doc.data() };
+                        const jaExistia = mapaLancRecentes.has(change.doc.id) || mapaLancPendentes.has(change.doc.id) || mapaLancExtras.has(change.doc.id);
+                        mapaLancRecentes.set(change.doc.id, dados);
+                        if (dados.statusPagamento !== 'Sim') {
+                            mapaLancPendentes.set(change.doc.id, dados);
+                        } else {
+                            mapaLancPendentes.delete(change.doc.id);
+                        }
+                        if (carregamentoInicialConcluido && change.type === 'added' && !jaExistia) {
+                            idsRecemDestacados.add(change.doc.id);
+                            houveInclusaoRemota = true;
+                        }
+                    }
+                });
+                reconstruirLancamentosDB();
+                window.atualizarInterfaces();
+                atualizarRelatorioAbertoEmTempoReal();
+                if (houveInclusaoRemota) {
+                    window.mostrarNotificacao("🔄 Nova produção sincronizada em tempo real!", "info");
+                }
+            }, (err) => console.warn("Erro listener lancamentos recentes:", err));
+
+            // 2. Listener enxuto apenas para rotas pendentes ("Não") de qualquer mês
+            const qPendentesRT = query(collection(db, "producao_lancamentos"), where("statusPagamento", "==", "Não"));
+            const unsubLancPendentes = onSnapshot(qPendentesRT, (snapshot) => {
+                let houveInclusaoRemota = false;
+                const idsAtuaisPendentes = new Set();
+                snapshot.docs.forEach(d => idsAtuaisPendentes.add(d.id));
+
+                snapshot.docChanges().forEach(change => {
+                    const docId = change.doc.id;
+                    if (change.type === 'removed') {
+                        mapaLancPendentes.delete(docId);
+                    } else {
+                        const dados = { id: docId, ...change.doc.data() };
+                        const jaExistia = mapaLancRecentes.has(docId) || mapaLancPendentes.has(docId) || mapaLancExtras.has(docId);
+                        mapaLancPendentes.set(docId, dados);
+                        if (mapaLancRecentes.has(docId)) {
+                            mapaLancRecentes.set(docId, dados);
+                        }
+                        if (carregamentoInicialConcluido && change.type === 'added' && !jaExistia) {
+                            idsRecemDestacados.add(docId);
+                            houveInclusaoRemota = true;
+                        }
+                    }
+                });
+
+                Array.from(mapaLancPendentes.keys()).forEach(k => {
+                    if (!idsAtuaisPendentes.has(k)) {
+                        mapaLancPendentes.delete(k);
+                    }
+                });
+
+                reconstruirLancamentosDB();
+                window.atualizarInterfaces();
+                atualizarRelatorioAbertoEmTempoReal();
+                if (houveInclusaoRemota) {
+                    window.mostrarNotificacao("🔄 Nova produção sincronizada em tempo real!", "info");
+                }
+            }, (err) => console.warn("Erro listener pendentes:", err));
+
+            // 3. Listener enxuto de descontos (limitado aos 80 mais recentes)
+            const unsubDescontos = onSnapshot(query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(80)), (snapshot) => {
+                const mapaLocal = new Map(descontosDB.map(d => [d.id, d]));
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'removed') {
+                        mapaLocal.delete(change.doc.id);
+                    } else {
+                        mapaLocal.set(change.doc.id, { id: change.doc.id, ...change.doc.data() });
+                    }
+                });
+                descontosDB = deduplicarEOrdenarPorDataDesc(Array.from(mapaLocal.values()));
+                window.atualizarInterfaces();
+                atualizarRelatorioAbertoEmTempoReal();
+            }, (err) => console.warn("Erro listener descontos:", err));
+
+            listenersTempoReal.push(unsubLancRecentes, unsubLancPendentes, unsubDescontos);
+            listenersPausadosPorInatividade = false;
+        }
+
+        // Pausa listeners se a aba ficar oculta em segundo plano por mais de 5 minutos para economizar cota diária
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                if (timerPausaInatividade) clearTimeout(timerPausaInatividade);
+                timerPausaInatividade = setTimeout(() => {
+                    if (auth.currentUser && listenersTempoReal.length > 0) {
+                        limparListenersTempoReal();
+                        listenersPausadosPorInatividade = true;
+                    }
+                }, 5 * 60 * 1000);
+            } else if (document.visibilityState === 'visible') {
+                if (timerPausaInatividade) {
+                    clearTimeout(timerPausaInatividade);
+                    timerPausaInatividade = null;
+                }
+                if (auth.currentUser && listenersPausadosPorInatividade) {
+                    ativarListenersEssenciaisTempoReal();
+                    carregamentoInicialConcluido = true;
+                }
+            }
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('view-login').classList.remove('active');
                 document.getElementById('view-app-main').classList.add('active');
-                document.getElementById('loading-text').innerText = "A sincronizar em tempo real com a base de dados...";
+                document.getElementById('loading-text').innerText = "A sincronizar com economia de leituras...";
                 carregarDadosDoFirebase();
             } else {
                 limparListenersTempoReal();
@@ -2925,8 +3059,6 @@
 
         async function carregarDadosDoFirebase() {
             try {
-                limparListenersTempoReal();
-
                 const dataHoje = formatarDataLocalISO(new Date());
                 document.getElementById('lanc-data').value = dataHoje;
                 document.getElementById('desc-data').value = dataHoje;
@@ -2935,12 +3067,12 @@
                 }
                 document.getElementById('filtro-dash-status').value = 'Não';
 
-                // Carregamento inicial rápido + ativação dos listeners em tempo real (onSnapshot)
-                const [queryFuncs, queryVeic, queryLanc, queryDesc] = await Promise.all([
+                // Coleções estáticas/baixa frequência: apenas 1 leitura única por sessão (sem duplicar com onSnapshot contínuo)
+                const [queryFuncs, queryVeic, queryDescFut, snapMetas] = await Promise.all([
                     getDocs(collection(db, "funcionarios")),
                     getDocs(collection(db, "veiculos")),
-                    getDocs(query(collection(db, "producao_lancamentos"), orderBy("data", "desc"), limit(300))),
-                    getDocs(query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(200)))
+                    getDocs(query(collection(db, "producao_descontos_futuros"), orderBy("data", "desc"), limit(80))).catch(() => ({ forEach: () => {} })),
+                    getDoc(doc(db, "producao_config", "metas_ranking")).catch(() => null)
                 ]);
 
                 funcionariosDB = [];
@@ -2949,138 +3081,21 @@
                 veiculosDB = [];
                 queryVeic.forEach(d => veiculosDB.push({ id: d.id, ...d.data() }));
 
-                mapaLancRecentes.clear();
-                queryLanc.forEach(d => mapaLancRecentes.set(d.id, { id: d.id, ...d.data() }));
-
-                try {
-                    const snapPendentes = await getDocs(query(collection(db, "producao_lancamentos"), where("statusPagamento", "==", "Não")));
-                    mapaLancPendentes.clear();
-                    snapPendentes.forEach(d => mapaLancPendentes.set(d.id, { id: d.id, ...d.data() }));
-                } catch (errPend) {
-                    console.warn("Aviso ao buscar pendentes extras:", errPend);
-                }
-
-                reconstruirLancamentosDB();
-
-                descontosDB = [];
-                queryDesc.forEach(d => descontosDB.push({ id: d.id, ...d.data() }));
-                descontosDB.sort(compararPorDataECriacao);
-
                 descontosFuturosDB = [];
-                try {
-                    const queryDescFut = await getDocs(query(collection(db, "producao_descontos_futuros"), orderBy("data", "desc"), limit(150)));
-                    queryDescFut.forEach(d => descontosFuturosDB.push({ id: d.id, ...d.data() }));
-                } catch (errFut) {
-                    console.warn("Aviso ao carregar descontos futuros:", errFut);
+                queryDescFut.forEach(d => descontosFuturosDB.push({ id: d.id, ...d.data() }));
+                descontosFuturosDB = deduplicarEOrdenarPorDataDesc(descontosFuturosDB);
+
+                if (snapMetas && snapMetas.exists && snapMetas.exists()) {
+                    const dadosMetas = snapMetas.data();
+                    if (dadosMetas && typeof window.aplicarMetasRecebidas === 'function') {
+                        window.aplicarMetasRecebidas(dadosMetas);
+                    }
                 }
 
+                // Inicia apenas os 3 listeners essenciais (sem chamar getDocs antes nas mesmas coleções, economizando 50% das leituras na abertura!)
+                ativarListenersEssenciaisTempoReal();
                 window.atualizarInterfaces();
-                carregamentoInicialConcluido = true;
-
-                // --- LISTENERS EM TEMPO REAL PARA TODOS OS DISPOSITIVOS CONECTADOS ---
-                const qLancRecentesRT = query(collection(db, "producao_lancamentos"), orderBy("data", "desc"), limit(300));
-                const unsubLancRecentes = onSnapshot(qLancRecentesRT, (snapshot) => {
-                    let houveInclusaoRemota = false;
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'removed') {
-                            mapaLancRecentes.delete(change.doc.id);
-                            mapaLancPendentes.delete(change.doc.id);
-                            mapaLancExtras.delete(change.doc.id);
-                        } else {
-                            const dados = { id: change.doc.id, ...change.doc.data() };
-                            const jaExistia = mapaLancRecentes.has(change.doc.id) || mapaLancPendentes.has(change.doc.id) || mapaLancExtras.has(change.doc.id);
-                            mapaLancRecentes.set(change.doc.id, dados);
-                            if (dados.statusPagamento !== 'Sim') {
-                                mapaLancPendentes.set(change.doc.id, dados);
-                            } else {
-                                mapaLancPendentes.delete(change.doc.id);
-                            }
-                            if (carregamentoInicialConcluido && change.type === 'added' && !jaExistia) {
-                                idsRecemDestacados.add(change.doc.id);
-                                houveInclusaoRemota = true;
-                            }
-                        }
-                    });
-                    reconstruirLancamentosDB();
-                    window.atualizarInterfaces();
-                    atualizarRelatorioAbertoEmTempoReal();
-                    if (houveInclusaoRemota) {
-                        window.mostrarNotificacao("🔄 Nova produção sincronizada em tempo real!", "info");
-                    }
-                }, (err) => console.warn("Erro listener lancamentos recentes:", err));
-
-                const qPendentesRT = query(collection(db, "producao_lancamentos"), where("statusPagamento", "==", "Não"));
-                const unsubLancPendentes = onSnapshot(qPendentesRT, (snapshot) => {
-                    let houveInclusaoRemota = false;
-                    const idsAtuaisPendentes = new Set();
-                    snapshot.docs.forEach(d => idsAtuaisPendentes.add(d.id));
-
-                    snapshot.docChanges().forEach(change => {
-                        const docId = change.doc.id;
-                        if (change.type === 'removed') {
-                            mapaLancPendentes.delete(docId);
-                        } else {
-                            const dados = { id: docId, ...change.doc.data() };
-                            const jaExistia = mapaLancRecentes.has(docId) || mapaLancPendentes.has(docId) || mapaLancExtras.has(docId);
-                            mapaLancPendentes.set(docId, dados);
-                            if (mapaLancRecentes.has(docId)) {
-                                mapaLancRecentes.set(docId, dados);
-                            }
-                            if (carregamentoInicialConcluido && change.type === 'added' && !jaExistia) {
-                                idsRecemDestacados.add(docId);
-                                houveInclusaoRemota = true;
-                            }
-                        }
-                    });
-
-                    // Limpa do mapa de pendentes os que deixaram de ser pendentes
-                    Array.from(mapaLancPendentes.keys()).forEach(k => {
-                        if (!idsAtuaisPendentes.has(k)) {
-                            mapaLancPendentes.delete(k);
-                        }
-                    });
-
-                    reconstruirLancamentosDB();
-                    window.atualizarInterfaces();
-                    atualizarRelatorioAbertoEmTempoReal();
-                    if (houveInclusaoRemota) {
-                        window.mostrarNotificacao("🔄 Nova produção sincronizada em tempo real!", "info");
-                    }
-                }, (err) => console.warn("Erro listener pendentes:", err));
-
-                const unsubDescontos = onSnapshot(query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(200)), (snapshot) => {
-                    const listaSnap = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    descontosDB = deduplicarEOrdenarPorDataDesc(listaSnap);
-                    window.atualizarInterfaces();
-                    atualizarRelatorioAbertoEmTempoReal();
-                }, (err) => console.warn("Erro listener descontos:", err));
-
-                const unsubDescontosFut = onSnapshot(query(collection(db, "producao_descontos_futuros"), orderBy("data", "desc"), limit(150)), (snapshot) => {
-                    const listaFutSnap = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    descontosFuturosDB = deduplicarEOrdenarPorDataDesc(listaFutSnap);
-                    window.atualizarTabelaDescontosFuturos();
-                }, (err) => console.warn("Erro listener descontos futuros:", err));
-
-                const unsubFuncs = onSnapshot(collection(db, "funcionarios"), (snapshot) => {
-                    funcionariosDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    window.atualizarInterfaces();
-                }, (err) => console.warn("Erro listener funcionarios:", err));
-
-                const unsubVeics = onSnapshot(collection(db, "veiculos"), (snapshot) => {
-                    veiculosDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    window.atualizarInterfaces();
-                }, (err) => console.warn("Erro listener veiculos:", err));
-
-                const unsubMetas = onSnapshot(doc(db, "producao_config", "metas_ranking"), (docSnap) => {
-                    if (docSnap.exists()) {
-                        const dadosMetas = docSnap.data();
-                        if (dadosMetas && typeof window.aplicarMetasRecebidas === 'function') {
-                            window.aplicarMetasRecebidas(dadosMetas);
-                        }
-                    }
-                }, (err) => console.warn("Aviso listener metas:", err));
-
-                listenersTempoReal.push(unsubLancRecentes, unsubLancPendentes, unsubDescontos, unsubDescontosFut, unsubFuncs, unsubVeics, unsubMetas);
+                setTimeout(() => { carregamentoInicialConcluido = true; }, 1200);
 
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
@@ -3112,7 +3127,12 @@
             const fDataIni = document.getElementById('filtro-dash-data')?.value || '';
             const fDataFim = document.getElementById('filtro-dash-data-fim')?.value || '';
 
-            if (fDataIni || fDataFim) {
+            const { inicioMesAnteriorISO } = obterLimitesMesAnteriorEAtual();
+            const chavePeriodo = `${fDataIni}_${fDataFim}`;
+            const precisaIrNaNuvem = (fDataIni && fDataIni < inicioMesAnteriorISO) || (!fDataIni && fDataFim && fDataFim < inicioMesAnteriorISO);
+
+            if (precisaIrNaNuvem && !periodosDashConsultados.has(chavePeriodo)) {
+                periodosDashConsultados.add(chavePeriodo);
                 try {
                     let qPeriodo;
                     if (fDataIni && fDataFim) {
@@ -4297,25 +4317,21 @@
                 document.getElementById('loading-global').style.display = 'flex';
                 document.getElementById('loading-text').innerText = `A processar baixa e compensações...`;
 
-                const promessas = [];
+                const batch = writeBatch(db);
                 idsProcessar.forEach(id => {
-                    promessas.push(
-                        updateDoc(doc(db, "producao_lancamentos", id), {
-                            statusPagamento: 'Sim',
-                            dataPagamento: dataPagou
-                        })
-                    );
+                    batch.update(doc(db, "producao_lancamentos", id), {
+                        statusPagamento: 'Sim',
+                        dataPagamento: dataPagou
+                    });
                 });
                 idsDescProcessar.forEach(idDesc => {
-                    promessas.push(
-                        updateDoc(doc(db, "producao_descontos", idDesc), {
-                            statusCompensado: 'Sim',
-                            dataCompensacao: dataPagou
-                        })
-                    );
+                    batch.update(doc(db, "producao_descontos", idDesc), {
+                        statusCompensado: 'Sim',
+                        dataCompensacao: dataPagou
+                    });
                 });
 
-                await Promise.all(promessas);
+                await batch.commit();
 
                 idsProcessar.forEach(id => {
                     const idx = lancamentosDB.findIndex(l => l.id === id);
@@ -4446,12 +4462,14 @@
                         document.getElementById('loading-global').style.display = 'flex';
                         document.getElementById('loading-text').innerText = `A desfazer ${idsDesfazer.length} pagamento(s)...`;
 
-                        await Promise.all(idsDesfazer.map(id =>
-                            updateDoc(doc(db, "producao_lancamentos", id), {
+                        const batchDesfazer = writeBatch(db);
+                        idsDesfazer.forEach(id => {
+                            batchDesfazer.update(doc(db, "producao_lancamentos", id), {
                                 statusPagamento: 'Não',
                                 dataPagamento: null
-                            })
-                        ));
+                            });
+                        });
+                        await batchDesfazer.commit();
 
                         idsDesfazer.forEach(id => {
                             const idx = lancamentosDB.findIndex(l => l.id === id);
@@ -4624,36 +4642,10 @@
             }
         };
 
-        // --- CALENDÁRIO CUSTOMIZADO COM DIAS EM ABERTO E DESCONTOS PINTADOS ---
+        // --- CALENDÁRIO CUSTOMIZADO COM DIAS EM ABERTO E DESCONTOS PINTADOS (0 LEITURAS EXTRAS: USA DADOS JÁ SINCRONIZADOS) ---
         window.aoSelecionarFuncionarioRelatorio = async function(preencherDatasAutomatico = false) {
             const idFunc = document.getElementById('filtro-funcionario').value;
             window.renderizarPreviaFuncionarios();
-
-            if (idFunc) {
-                try {
-                    const [snapLanc, snapDesc] = await Promise.all([
-                        getDocs(query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc))),
-                        getDocs(query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc)))
-                    ]);
-
-                    snapLanc.forEach(d => {
-                        const dados = { id: d.id, ...d.data() };
-                        mapaLancExtras.set(d.id, dados);
-                        if (dados.statusPagamento !== 'Sim') {
-                            mapaLancPendentes.set(d.id, dados);
-                        }
-                    });
-                    reconstruirLancamentosDB();
-
-                    const mapaLocalDesc = new Map(descontosDB.map(d => [d.id, d]));
-                    snapDesc.forEach(d => {
-                        mapaLocalDesc.set(d.id, { id: d.id, ...d.data() });
-                    });
-                    descontosDB = deduplicarEOrdenarPorDataDesc(Array.from(mapaLocalDesc.values()));
-                } catch (err) {
-                    console.warn("Usando cache local para dias em aberto e descontos:", err);
-                }
-            }
 
             window.atualizarMapaDiasAbertosRelatorio();
 
@@ -5140,48 +5132,48 @@
             try {
                 let filtrados = [];
 
-                // 1. Busca Rotas do Funcionário respeitando Data Inicial, Data Final e Status do Pagamento
-                const qLanc = query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc));
-                const snapLanc = await getDocs(qLanc);
-                const mapaLocalLanc = new Map(lancamentosDB.map(l => [l.id, l]));
+                // Só consulta o Firebase se o usuário pedir rotas pagas anteriores ao mês passado e o histórico deste funcionário ainda não estiver em cache
+                const { inicioMesAnteriorISO } = obterLimitesMesAnteriorEAtual();
+                const precisaBuscarHistoricoAntigo = (statusFiltro !== 'Não' && dataIn < inicioMesAnteriorISO && !funcionariosHistoricoCarregado.has(idFunc));
 
-                snapLanc.forEach(d => {
-                    const dadosDoc = { id: d.id, ...d.data() };
-                    mapaLancExtras.set(d.id, dadosDoc);
-                    if (dadosDoc.statusPagamento !== 'Sim') {
-                        mapaLancPendentes.set(d.id, dadosDoc);
-                    }
-                    const l = { ...dadosDoc, tipo: 'rota' };
-                    if (l.data >= dataIn && l.data <= dataFim) {
-                        const isPago = l.statusPagamento === 'Sim';
-                        if (statusFiltro === 'Tudo') {
-                            filtrados.push(l);
-                        } else if (statusFiltro === 'Sim' && isPago) {
-                            filtrados.push(l);
-                        } else if (statusFiltro === 'Não' && !isPago) {
-                            filtrados.push(l);
+                if (precisaBuscarHistoricoAntigo) {
+                    funcionariosHistoricoCarregado.add(idFunc);
+                    const [snapLanc, snapDesc] = await Promise.all([
+                        getDocs(query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc))),
+                        getDocs(query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc)))
+                    ]);
+                    snapLanc.forEach(d => {
+                        const dadosDoc = { id: d.id, ...d.data() };
+                        mapaLancExtras.set(d.id, dadosDoc);
+                        if (dadosDoc.statusPagamento !== 'Sim') {
+                            mapaLancPendentes.set(d.id, dadosDoc);
+                        }
+                    });
+                    reconstruirLancamentosDB();
+
+                    const mapaLocalDesc = new Map(descontosDB.map(d => [d.id, d]));
+                    snapDesc.forEach(d => mapaLocalDesc.set(d.id, { id: d.id, ...d.data() }));
+                    descontosDB = deduplicarEOrdenarPorDataDesc(Array.from(mapaLocalDesc.values()));
+                }
+
+                // Filtra diretamente da memória já sincronizada (0 leituras extras na nuvem!)
+                lancamentosDB.forEach(dadosDoc => {
+                    if (dadosDoc.idFuncionario === idFunc && dadosDoc.data >= dataIn && dadosDoc.data <= dataFim) {
+                        const isPago = dadosDoc.statusPagamento === 'Sim';
+                        if (statusFiltro === 'Tudo' || (statusFiltro === 'Sim' && isPago) || (statusFiltro === 'Não' && !isPago)) {
+                            filtrados.push({ ...dadosDoc, tipo: 'rota' });
                         }
                     }
                 });
-                reconstruirLancamentosDB();
 
-                // 2. Busca Descontos do Funcionário no período
-                const qDesc = query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc));
-                const snapDesc = await getDocs(qDesc);
-                const mapaLocalDesc = new Map(descontosDB.map(d => [d.id, d]));
-
-                snapDesc.forEach(d => {
-                    const dadosDesc = { id: d.id, ...d.data() };
-                    mapaLocalDesc.set(d.id, dadosDesc);
-                    const desc = { ...dadosDesc, tipo: 'desconto' };
-                    if (desc.data >= dataIn && desc.data <= dataFim) {
-                        const isComp = desc.statusCompensado === 'Sim';
+                descontosDB.forEach(dadosDesc => {
+                    if (dadosDesc.idFuncionario === idFunc && dadosDesc.data >= dataIn && dadosDesc.data <= dataFim) {
+                        const isComp = dadosDesc.statusCompensado === 'Sim';
                         if (statusFiltro === 'Tudo' || (statusFiltro === 'Sim' && isComp) || (statusFiltro === 'Não' && !isComp)) {
-                            filtrados.push(desc);
+                            filtrados.push({ ...dadosDesc, tipo: 'desconto' });
                         }
                     }
                 });
-                descontosDB = Array.from(mapaLocalDesc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
                 // Ordena primeiramente por data e depois por ordem de criação
                 filtrados.sort(compararPorDataECriacao);
@@ -5458,7 +5450,9 @@
         };
 
         window.garantirDadosMesRanking = async function(anoMes) {
-            if (!anoMes || mesesJaConsultadosNuvem.has(anoMes)) return;
+            const { inicioMesAnteriorISO } = obterLimitesMesAnteriorEAtual();
+            const mesAnteriorPrefix = inicioMesAnteriorISO.substring(0, 7);
+            if (!anoMes || anoMes >= mesAnteriorPrefix || mesesJaConsultadosNuvem.has(anoMes)) return;
             mesesJaConsultadosNuvem.add(anoMes);
             try {
                 const ini = `${anoMes}-01`;
