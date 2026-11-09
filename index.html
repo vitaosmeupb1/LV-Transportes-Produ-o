@@ -1567,15 +1567,16 @@
 <body>
 
     <script>
+        // Limpa eventuais Service Workers inválidos e evita erro de protocolo blob: no Console
         if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.getRegistrations().then(regs => {
-                    if (regs.length === 0) {
-                        const swCode = "self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('activate', e => e.waitUntil(self.clients.claim())); self.addEventListener('fetch', e => {});";
-                        const blob = new Blob([swCode], { type: 'application/javascript' });
-                        navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
-                    }
-                });
+                    regs.forEach(reg => {
+                        if (reg.active && reg.active.scriptURL && reg.active.scriptURL.startsWith('blob:')) {
+                            reg.unregister().catch(() => {});
+                        }
+                    });
+                }).catch(() => {});
             });
         }
     </script>
@@ -2686,6 +2687,20 @@
             };
         }
 
+        function deduplicarEOrdenarPorDataDesc(lista) {
+            const mapa = new Map();
+            (lista || []).forEach(item => {
+                if (item && item.id) {
+                    mapa.set(item.id, item);
+                }
+            });
+            return Array.from(mapa.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+        }
+
+        let salvandoRotaLock = false;
+        let salvandoDescontoLock = false;
+        let salvandoDescontoFuturoLock = false;
+
         function reconstruirLancamentosDB() {
             const mapaUnificado = new Map();
             mapaLancExtras.forEach((v, k) => mapaUnificado.set(k, v));
@@ -3565,6 +3580,7 @@
             const fMes = document.getElementById('filtro-desc-mes').value;
             const fFunc = document.getElementById('filtro-desc-funcionario').value;
 
+            descontosDB = deduplicarEOrdenarPorDataDesc(descontosDB);
             let descFiltered = [...descontosDB];
             
             if (fMes) descFiltered = descFiltered.filter(d => d.data && d.data.startsWith(fMes));
@@ -3688,6 +3704,7 @@
             if (!tbFut) return;
 
             const fFunc = document.getElementById('filtro-descfut-funcionario')?.value || '';
+            descontosFuturosDB = deduplicarEOrdenarPorDataDesc(descontosFuturosDB);
             let futFiltered = [...descontosFuturosDB];
 
             if (fFunc) {
@@ -3720,6 +3737,8 @@
 
         window.lancarDescontoFuturo = async function(e) {
             e.preventDefault();
+            if (salvandoDescontoFuturoLock) return;
+            salvandoDescontoFuturoLock = true;
             const btn = document.getElementById('btn-salvar-desconto-futuro');
             btn.disabled = true; btn.innerText = "A anotar...";
 
@@ -3735,7 +3754,6 @@
                 const valor = window.converterMoedaParaFloat(valorStr);
                 if (valor <= 0) {
                     window.mostrarNotificacao("O valor previsto deve ser maior que zero.", "warning");
-                    btn.disabled = false; btn.innerText = "Anotar Desconto Futuro";
                     return;
                 }
 
@@ -3750,7 +3768,7 @@
                 };
 
                 const docRef = await addDoc(collection(db, "producao_descontos_futuros"), novoFut);
-                descontosFuturosDB.unshift({ id: docRef.id, ...novoFut });
+                descontosFuturosDB = deduplicarEOrdenarPorDataDesc([{ id: docRef.id, ...novoFut }, ...descontosFuturosDB]);
 
                 document.getElementById('descfut-nome').value = '';
                 document.getElementById('descfut-valor').value = '';
@@ -3760,6 +3778,7 @@
                 console.error(err);
                 window.mostrarNotificacao("Erro ao anotar desconto futuro.", "error");
             } finally {
+                salvandoDescontoFuturoLock = false;
                 btn.disabled = false; btn.innerText = "Anotar Desconto Futuro";
             }
         };
@@ -3958,6 +3977,8 @@
         // --- LANÇAR ROTAS ---
         window.lancarRota = async function(e) {
             e.preventDefault();
+            if (salvandoRotaLock) return;
+            salvandoRotaLock = true;
             const btn = document.getElementById('btn-salvar-rota');
             btn.disabled = true; btn.innerText = "A processar...";
 
@@ -4027,6 +4048,7 @@
                 console.error(err);
                 window.mostrarNotificacao("Erro ao lançar rota. Verifique os dados.", "error");
             } finally {
+                salvandoRotaLock = false;
                 btn.disabled = false; btn.innerText = "Processar Registo de Rota";
             }
         };
@@ -4034,6 +4056,8 @@
         // --- LANÇAR DESCONTOS ---
         window.lancarDesconto = async function(e) {
             e.preventDefault();
+            if (salvandoDescontoLock) return;
+            salvandoDescontoLock = true;
             const btn = document.getElementById('btn-salvar-desconto');
             btn.disabled = true; btn.innerText = "A processar...";
 
@@ -4049,7 +4073,6 @@
                 const valor = window.converterMoedaParaFloat(valorStr);
                 if(valor <= 0) {
                     window.mostrarNotificacao("O valor do desconto deve ser maior que zero.", "warning");
-                    btn.disabled = false; btn.innerText = "Processar Desconto";
                     return;
                 }
 
@@ -4064,7 +4087,7 @@
                 };
 
                 const docRef = await addDoc(collection(db, "producao_descontos"), novoDesc);
-                descontosDB.unshift({ id: docRef.id, ...novoDesc });
+                descontosDB = deduplicarEOrdenarPorDataDesc([{ id: docRef.id, ...novoDesc }, ...descontosDB]);
                 
                 document.getElementById('desc-nome').value = '';
                 document.getElementById('desc-valor').value = '';
@@ -4075,6 +4098,7 @@
                 console.error(err);
                 window.mostrarNotificacao("Erro ao lançar desconto.", "error");
             } finally {
+                salvandoDescontoLock = false;
                 btn.disabled = false; btn.innerText = "Processar Desconto";
             }
         };
