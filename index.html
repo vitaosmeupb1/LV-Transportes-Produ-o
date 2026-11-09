@@ -153,6 +153,27 @@
         tr.row-selected td { background-color: #f0fdfa; }
         #tabela-lancamentos tr[data-rota-id] { cursor: pointer; transition: background-color 0.15s ease; }
         #tabela-lancamentos tr[data-rota-id]:hover td { background-color: #f4fbfa; }
+        @keyframes pulseRealtimeRow {
+            0% { background-color: #c8ed74; }
+            60% { background-color: #e5f7f5; }
+            100% { background-color: transparent; }
+        }
+        tr.realtime-new-row td {
+            animation: pulseRealtimeRow 2.4s ease;
+        }
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            box-shadow: 0 0 0 3px rgba(26, 168, 120, 0.22);
+            animation: pulseDot 1.8s infinite ease-in-out;
+        }
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.65; }
+        }
         
         .badge { padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; display: inline-block; }
         .badge-mot { background: #eaf6fb; color: #318eb4; }
@@ -289,6 +310,888 @@
             color: var(--muted);
             border-top: 1px dashed var(--line);
             padding-top: 8px;
+        }
+        /* --- LAYOUT OTIMIZADO E COMPACTO PARA RELATÓRIOS & PAGAMENTOS (DESKTOP & MOBILE) --- */
+        #view-relatorios .rel-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--danger);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        #view-relatorios .rel-top-title h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            line-height: 1.2;
+            color: var(--ink);
+            letter-spacing: -0.4px;
+            margin: 0;
+        }
+        #view-relatorios .rel-top-title p {
+            font-size: 12px;
+            color: var(--muted);
+            margin: 2px 0 0 0;
+        }
+        #view-relatorios .rel-top-kpi {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            background: var(--danger-pale);
+            border: 1px solid #f5d0d0;
+            padding: 7px 12px;
+            border-radius: 10px;
+        }
+        #view-relatorios .rel-top-kpi-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--danger);
+        }
+        #view-relatorios .rel-top-kpi-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--danger);
+            margin: 0;
+        }
+        #view-relatorios .rel-top-kpi-sub {
+            font-size: 11px;
+            font-weight: 700;
+            color: #991b1b;
+            margin-top: 2px;
+            background: rgba(222, 91, 91, 0.14);
+            padding: 1px 7px;
+            border-radius: 5px;
+        }
+        #view-relatorios .card {
+            margin-bottom: 12px;
+            border-radius: 12px;
+        }
+        #view-relatorios .card-header {
+            padding: 10px 14px;
+        }
+        #view-relatorios .card-header h2 {
+            font-size: 14px;
+            line-height: 1.25;
+        }
+        #view-relatorios .card-body {
+            padding: 12px 14px;
+        }
+        #view-relatorios .previa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+            gap: 8px;
+            margin-top: 0;
+        }
+        #view-relatorios .previa-card {
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 8px 11px;
+            gap: 4px;
+            background: var(--surface);
+        }
+        #view-relatorios .previa-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(19, 33, 47, 0.07);
+        }
+        #view-relatorios .previa-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+        #view-relatorios .previa-nome {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--ink);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #view-relatorios .previa-valor {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        #view-relatorios .previa-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            border-top: none;
+            padding-top: 2px;
+        }
+        #view-relatorios .previa-tag-ciclo {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        #view-relatorios .previa-tag-ciclo.ant {
+            color: #92400e;
+            background: #fef3c7;
+        }
+        #view-relatorios .previa-tag-ciclo.atu {
+            color: var(--brand-dark);
+            background: var(--brand-pale);
+        }
+        #view-relatorios .badge {
+            padding: 2px 6px;
+            font-size: 9.5px;
+            border-radius: 4px;
+        }
+        #view-relatorios .pill-btn {
+            padding: 4px 10px;
+            font-size: 11.5px;
+        }
+        #view-relatorios .rel-filter-grid {
+            display: grid;
+            grid-template-columns: 1.45fr 1fr 1fr 0.85fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 0;
+        }
+        #view-relatorios .rel-filter-grid .form-group {
+            gap: 4px;
+            min-width: 0;
+        }
+        #view-relatorios .rel-filter-grid label {
+            font-size: 10.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #view-relatorios .rel-filter-grid select,
+        #view-relatorios .rel-filter-grid .custom-date-trigger,
+        #view-relatorios .rel-filter-grid .btn {
+            min-height: 38px;
+            height: 38px;
+            padding: 6px 10px;
+            font-size: 13px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+        #view-relatorios .rel-filter-grid .custom-date-trigger span:first-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #view-relatorios .rel-table-wrap table {
+            min-width: 100%;
+        }
+        #view-relatorios .rel-table-wrap th {
+            padding: 8px 12px;
+            font-size: 10.5px;
+        }
+        #view-relatorios .rel-table-wrap td {
+            padding: 8px 12px;
+            font-size: 12.5px;
+        }
+        #view-relatorios .rel-kpis-footer {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 10px 14px;
+            background: #f8fafb;
+            border-top: 1px solid var(--line);
+        }
+        #view-relatorios .rel-kpi-box {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 7px 10px;
+            text-align: right;
+        }
+        #view-relatorios .rel-kpi-box.destaque {
+            background: var(--danger-pale);
+            border-color: #f5c2c2;
+        }
+        #view-relatorios .rel-kpi-box span {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        #view-relatorios .rel-kpi-box h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            margin-top: 1px;
+        }
+        #view-relatorios .rel-kpi-box.destaque h3 {
+            font-size: 17px;
+        }
+        @media (max-width: 960px) {
+            #view-relatorios .rel-filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            #view-relatorios .rel-filter-grid .fg-func {
+                grid-column: 1 / -1;
+            }
+        }
+        @media (max-width: 780px) {
+            #view-relatorios .rel-top-bar {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            #view-relatorios .rel-top-title h1 {
+                font-size: 16px;
+            }
+            #view-relatorios .rel-top-title p {
+                font-size: 11px;
+            }
+            #view-relatorios .rel-top-kpi {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 10px;
+            }
+            #view-relatorios .rel-top-kpi-val {
+                font-size: 18px;
+            }
+            #view-relatorios .previa-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            #view-relatorios .previa-card {
+                padding: 7px 9px;
+            }
+            #view-relatorios .previa-nome {
+                font-size: 12px;
+            }
+            #view-relatorios .previa-valor {
+                font-size: 13.5px;
+            }
+            #view-relatorios .previa-meta {
+                font-size: 10px;
+                flex-wrap: wrap;
+            }
+            #view-relatorios .rel-filter-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+            #view-relatorios .rel-filter-grid .fg-func,
+            #view-relatorios .rel-filter-grid .fg-status,
+            #view-relatorios .rel-filter-grid .fg-actions {
+                grid-column: 1 / -1;
+            }
+            #view-relatorios .rel-filter-grid select,
+            #view-relatorios .rel-filter-grid .custom-date-trigger,
+            #view-relatorios .rel-filter-grid .btn {
+                min-height: 40px !important;
+                height: 40px !important;
+                font-size: 13px !important;
+            }
+            #view-relatorios .rel-table-wrap th,
+            #view-relatorios .rel-table-wrap td {
+                padding: 7px 6px;
+                font-size: 11.5px;
+            }
+            #view-relatorios .rel-kpis-footer {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+                padding: 8px 10px;
+            }
+        }
+        @media (max-width: 400px) {
+            #view-relatorios .previa-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* --- ABA RANKING DE PRODUÇÃO (GAMIFICADO, PÓDIO, ANIMAÇÕES E RESPONSIVO) --- */
+        #ranking-confetti-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+        }
+        @keyframes floatCrown {
+            0%, 100% { transform: translateY(0) rotate(-4deg) scale(1); }
+            50% { transform: translateY(-7px) rotate(4deg) scale(1.08); }
+        }
+        @keyframes podiumRise {
+            from { opacity: 0; transform: translateY(28px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shimmerGold {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        @keyframes barGrow {
+            from { width: 0%; }
+        }
+        @keyframes trophyPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35), 0 14px 34px rgba(15, 32, 43, 0.25); }
+            50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0), 0 18px 42px rgba(245, 158, 11, 0.32); }
+        }
+        .ranking-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #0d1f2b 0%, #15384a 52%, #0e5a5c 100%);
+            color: #fff;
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 16px 40px rgba(13, 31, 43, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .ranking-hero::before,
+        .ranking-hero::after {
+            content: '';
+            position: absolute;
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        .ranking-hero::before {
+            width: 280px;
+            height: 280px;
+            right: -80px;
+            top: -110px;
+            background: radial-gradient(circle, rgba(200, 237, 116, 0.28), transparent 68%);
+        }
+        .ranking-hero::after {
+            width: 260px;
+            height: 260px;
+            left: -70px;
+            bottom: -120px;
+            background: radial-gradient(circle, rgba(18, 167, 162, 0.32), transparent 68%);
+        }
+        .ranking-hero-top {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .ranking-hero-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ranking-trophy-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #fde047 0%, #f59e0b 100%);
+            color: #13212f;
+            display: grid;
+            place-items: center;
+            font-size: 25px;
+            box-shadow: 0 8px 22px rgba(245, 158, 11, 0.38);
+            flex-shrink: 0;
+        }
+        .ranking-hero-title h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            letter-spacing: -0.6px;
+            margin: 0;
+            color: #fff;
+        }
+        .ranking-hero-title p {
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, 0.78);
+            margin: 2px 0 0 0;
+        }
+        .ranking-controls-bar {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .ranking-month-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .ranking-month-btn {
+            min-height: 36px;
+            height: 36px;
+            padding: 0 11px;
+            border-radius: 9px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .18s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ranking-month-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .ranking-month-select {
+            min-height: 36px !important;
+            height: 36px !important;
+            padding: 4px 12px !important;
+            border-radius: 9px !important;
+            border: 1px solid rgba(200, 237, 116, 0.5) !important;
+            background: rgba(15, 32, 43, 0.85) !important;
+            color: #fff !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            width: auto !important;
+            cursor: pointer;
+        }
+        .ranking-cycle-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.88);
+            background: rgba(0, 0, 0, 0.24);
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .ranking-kpis-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .ranking-kpi-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 11px 14px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            box-shadow: var(--shadow-sm);
+            transition: .2s;
+        }
+        .ranking-kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(19, 33, 47, 0.06);
+        }
+        .ranking-kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+        .ranking-kpi-info span {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .ranking-kpi-info strong {
+            display: block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 17px;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+        .ranking-kpi-info small {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* --- PÓDIO OLÍMPICO TOP 3 --- */
+        .ranking-podium-stage {
+            background: linear-gradient(180deg, #ffffff 0%, #f4f8fa 100%);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .ranking-podium-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.12fr 1fr;
+            gap: 14px;
+            align-items: end;
+            max-width: 880px;
+            margin: 8px auto 0;
+        }
+        .podium-spot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-radius: 16px;
+            padding: 18px 14px 14px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            animation: podiumRise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .podium-spot:hover {
+            transform: translateY(-5px);
+        }
+        .podium-spot.pos-1 {
+            background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 55%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            min-height: 255px;
+            z-index: 3;
+            animation-delay: 0.08s;
+            animation-name: podiumRise;
+            box-shadow: 0 14px 34px rgba(245, 158, 11, 0.22);
+        }
+        .podium-spot.pos-2 {
+            background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 60%, #e2e8f0 100%);
+            border: 2px solid #94a3b8;
+            min-height: 220px;
+            z-index: 2;
+            animation-delay: 0.18s;
+            box-shadow: 0 10px 24px rgba(100, 116, 139, 0.14);
+        }
+        .podium-spot.pos-3 {
+            background: linear-gradient(160deg, #fff7ed 0%, #ffedd5 60%, #fed7aa 100%);
+            border: 2px solid #ea580c;
+            min-height: 205px;
+            z-index: 1;
+            animation-delay: 0.28s;
+            box-shadow: 0 10px 24px rgba(234, 88, 12, 0.14);
+        }
+        .podium-crown {
+            font-size: 30px;
+            line-height: 1;
+            margin-bottom: 4px;
+            animation: floatCrown 2.4s ease-in-out infinite;
+            filter: drop-shadow(0 4px 6px rgba(245, 158, 11, 0.35));
+        }
+        .podium-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .pos-1 .podium-avatar {
+            width: 66px;
+            height: 66px;
+            font-size: 23px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            border: 3px solid #fff;
+            box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+        }
+        .pos-2 .podium-avatar {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: #fff;
+            border: 3px solid #fff;
+            box-shadow: 0 6px 14px rgba(71, 85, 105, 0.28);
+        }
+        .pos-3 .podium-avatar {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+            color: #fff;
+            border: 3px solid #fff;
+            box-shadow: 0 6px 14px rgba(194, 65, 12, 0.28);
+        }
+        .podium-rank-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .pos-1 .podium-rank-pill { background: #b45309; color: #fff; }
+        .pos-2 .podium-rank-pill { background: #334155; color: #fff; }
+        .pos-3 .podium-rank-pill { background: #9a3412; color: #fff; }
+        .podium-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+        .pos-1 .podium-name {
+            font-size: 17px;
+        }
+        .podium-routes-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin: 6px 0 2px;
+        }
+        .pos-1 .podium-routes-num { color: #b45309; font-size: 31px; }
+        .pos-2 .podium-routes-num { color: #334155; }
+        .pos-3 .podium-routes-num { color: #9a3412; }
+        .podium-routes-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.78;
+        }
+        .podium-substats {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(19, 33, 47, 0.14);
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--ink-2);
+            font-weight: 600;
+        }
+
+        /* --- TABELA DE CLASSIFICAÇÃO DETALHADA --- */
+        .rank-pos-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: inline-grid;
+            place-items: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .rank-pos-1 { background: #fef3c7; color: #b45309; border: 1px solid #f59e0b; font-size: 16px; }
+        .rank-pos-2 { background: #f1f5f9; color: #334155; border: 1px solid #94a3b8; font-size: 16px; }
+        .rank-pos-3 { background: #ffedd5; color: #9a3412; border: 1px solid #ea580c; font-size: 16px; }
+        .rank-pos-other { background: var(--surface-soft); color: var(--muted); border: 1px solid var(--line); }
+
+        .rank-progress-wrap {
+            width: 100%;
+            min-width: 130px;
+        }
+        .rank-progress-track {
+            width: 100%;
+            height: 8px;
+            background: #edf2f4;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .rank-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            animation: barGrow 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .rank-achievement-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: #334155;
+            margin-right: 4px;
+            margin-top: 3px;
+        }
+        .rank-achievement-tag.gold { background: #fef3c7; color: #92400e; }
+        .rank-achievement-tag.fire { background: #fee2e2; color: #991b1b; }
+        .rank-achievement-tag.teal { background: var(--brand-pale); color: var(--brand-dark); }
+
+        /* --- MODAL GRANDE DE CONFIGURAÇÃO DE METAS MENSAIS (MOTORISTA & AJUDANTE) --- */
+        .metas-modal-box {
+            max-width: 780px !important;
+            width: 100%;
+            padding: 24px 26px !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .metas-roles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 14px;
+        }
+        .meta-role-panel {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            background: var(--surface-soft);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .meta-role-panel.mot {
+            border-top: 4px solid #318eb4;
+            background: linear-gradient(180deg, #f4fafe 0%, #ffffff 100%);
+        }
+        .meta-role-panel.aju {
+            border-top: 4px solid #d89433;
+            background: linear-gradient(180deg, #fffdf7 0%, #ffffff 100%);
+        }
+        .meta-role-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+        }
+        .meta-role-header h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            color: var(--ink);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .meta-tiers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .meta-tier-row {
+            display: grid;
+            grid-template-columns: 1.2fr 0.9fr auto;
+            gap: 8px;
+            align-items: center;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .meta-tier-row input {
+            min-height: 36px !important;
+            height: 36px !important;
+            padding: 4px 10px !important;
+            font-size: 13px !important;
+            border-radius: 8px !important;
+        }
+        .meta-btn-remove {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid #f5c2c2;
+            background: var(--danger-pale);
+            color: var(--danger);
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-grid;
+            place-items: center;
+            transition: .15s;
+        }
+        .meta-btn-remove:hover {
+            background: #fee2e2;
+        }
+        .meta-btn-add {
+            width: 100%;
+            min-height: 36px;
+            border-radius: 9px;
+            border: 1px dashed var(--brand);
+            background: var(--brand-pale);
+            color: var(--brand-dark);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .15s;
+        }
+        .meta-btn-add:hover {
+            background: #d0f0ec;
+        }
+        .rank-achievement-tag.goal-hit {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        .rank-achievement-tag.goal-progress {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        @media (max-width: 780px) {
+            .metas-roles-grid {
+                grid-template-columns: 1fr;
+            }
+            .metas-modal-box {
+                padding: 18px 16px !important;
+            }
+        }
+
+        /* --- GALERIA DE CAMPEÕES DE MESES ANTERIORES --- */
+        .history-champions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 10px;
+        }
+        .history-champ-card {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: .2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .history-champ-card:hover {
+            border-color: #f59e0b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(19, 33, 47, 0.08);
+        }
+        .history-champ-card.active-month {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 2px rgba(18, 167, 162, 0.22);
+        }
+
+        @media (max-width: 780px) {
+            .ranking-kpis-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .ranking-podium-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .podium-spot.pos-1 { order: 1; min-height: auto; }
+            .podium-spot.pos-2 { order: 2; min-height: auto; }
+            .podium-spot.pos-3 { order: 3; min-height: auto; }
+            .ranking-hero {
+                padding: 15px;
+            }
+            .ranking-hero-title h1 {
+                font-size: 18px;
+            }
         }
         .previa-filter-pills {
             display: flex;
@@ -677,8 +1580,104 @@
         }
     </script>
 
+    <!-- CANVAS DE CONFETES DO RANKING -->
+    <canvas id="ranking-confetti-canvas"></canvas>
+
     <!-- CONTAINER DE NOTIFICAÇÕES (TOAST) -->
     <div id="toast-container"></div>
+
+    <!-- MODAL DE DETALHES DO FUNCIONÁRIO NO RANKING -->
+    <div id="modal-detalhe-ranking" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 520px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 id="modal-rank-titulo" style="margin: 0;">Desempenho no Mês</h3>
+                <span id="modal-rank-medalha" class="badge badge-mot">1º Lugar</span>
+            </div>
+            <p id="modal-rank-subtitulo" style="margin-bottom: 12px; font-size: 12.5px;"></p>
+            <div id="modal-rank-resumo-boxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px;"></div>
+            <div class="table-responsive" style="max-height: 240px; overflow-y: auto; border-top: 1px solid var(--line); border-radius: 10px;">
+                <table style="min-width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px 10px;">Data</th>
+                            <th style="padding: 8px 10px;">Turno</th>
+                            <th style="padding: 8px 10px;">Veículo</th>
+                            <th style="padding: 8px 10px;">Rotas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-rank-tbody"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions" style="margin-top: 16px;">
+                <button type="button" class="btn btn-primary" onclick="window.fecharModalDetalheRanking()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GRANDE DE CONFIGURAÇÕES DE METAS MENSAIS DO RANKING (MOTORISTA & AJUDANTE) -->
+    <div id="modal-config-metas" class="modal-overlay" style="display: none;">
+        <div class="modal-content metas-modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px;">
+                <div>
+                    <h3 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 8px;">⚙️ Configurações de Metas Mensais</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--muted);">Defina a meta mensal principal e os níveis de metas (escalões) em quantidade de rotas a serem batidas mensalmente, separadas para <strong>Motoristas</strong> e <strong>Ajudantes</strong>.</p>
+                </div>
+                <button type="button" class="btn btn-secondary" style="min-height: 34px; height: 34px; padding: 0 10px; font-size: 13px;" onclick="window.fecharModalConfigMetas()">✕</button>
+            </div>
+
+            <form onsubmit="window.salvarConfigMetasRanking(event)">
+                <div class="metas-roles-grid">
+                    <!-- PAINEL MOTORISTA -->
+                    <div class="meta-role-panel mot">
+                        <div class="meta-role-header">
+                            <h4>🚗 Metas — Motorista</h4>
+                            <span class="badge badge-mot">Por Mês</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Meta Mensal Principal (Qtd. de Rotas)</label>
+                            <input type="number" id="meta-principal-motorista" min="1" placeholder="Ex: 30 rotas no mês" required style="min-height: 42px; font-weight: 700; font-size: 15px; background: #fff;">
+                            <small style="font-size: 11px; color: var(--muted);">Quantidade de rotas para o Motorista bater a meta oficial do mês.</small>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px;">Níveis / Escalões Adicionais de Metas (Motorista)</label>
+                            <div id="lista-escaloes-motorista" class="meta-tiers-list"></div>
+                            <button type="button" class="meta-btn-add" style="margin-top: 8px;" onclick="window.adicionarEscalaoMeta('Motorista')">
+                                + Adicionar Nível de Meta (Motorista)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PAINEL AJUDANTE -->
+                    <div class="meta-role-panel aju">
+                        <div class="meta-role-header">
+                            <h4>📦 Metas — Ajudante</h4>
+                            <span class="badge badge-aju">Por Mês</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Meta Mensal Principal (Qtd. de Rotas)</label>
+                            <input type="number" id="meta-principal-ajudante" min="1" placeholder="Ex: 25 rotas no mês" required style="min-height: 42px; font-weight: 700; font-size: 15px; background: #fff;">
+                            <small style="font-size: 11px; color: var(--muted);">Quantidade de rotas para o Ajudante bater a meta oficial do mês.</small>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px;">Níveis / Escalões Adicionais de Metas (Ajudante)</label>
+                            <div id="lista-escaloes-ajudante" class="meta-tiers-list"></div>
+                            <button type="button" class="meta-btn-add" style="margin-top: 8px;" onclick="window.adicionarEscalaoMeta('Ajudante')">
+                                + Adicionar Nível de Meta (Ajudante)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resumo-preview-metas-modal" style="margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: #eef9f8; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                </div>
+
+                <div class="modal-actions" style="margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line);">
+                    <button type="button" class="btn btn-secondary" onclick="window.fecharModalConfigMetas()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-salvar-metas-ranking">💾 Salvar Metas Mensais</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- LOADING GLOBAL -->
     <div id="loading-global" class="loading-overlay">
@@ -871,6 +1870,7 @@
                     <button class="nav-item" onclick="window.mudarAba('view-relatorios', this)">Relatórios & Pagamentos</button>
                     <button class="nav-item" onclick="window.mudarAba('view-descontos', this)">Gestão de Descontos</button>
                     <button class="nav-item" onclick="window.mudarAba('view-cadastros', this)">Funcionários (Espelho)</button>
+                    <button class="nav-item" onclick="window.mudarAba('view-ranking', this)">🏆 Ranking de Produção</button>
                 </nav>
                 
                 <button class="btn-logout" onclick="window.voltarAoMenu()">
@@ -882,7 +1882,7 @@
             <main class="main-wrapper">
                 <header class="topbar">
                     <span id="topbar-title">Visão Geral & Lançamentos</span>
-                    <div class="topbar-badge"><i></i> Ligado ao Firebase</div>
+                    <div class="topbar-badge"><span class="realtime-dot"></span> Tempo Real Ativo (Firebase)</div>
                 </header>
 
                 <div class="content-area">
@@ -954,8 +1954,12 @@
                             <div class="card-body" style="background: var(--surface-soft); padding: 15px 25px;">
                                 <div class="form-row" style="margin-bottom: 0;">
                                     <div class="form-group">
-                                        <label>Filtrar por Data</label>
+                                        <label>Data Inicial</label>
                                         <input type="date" id="filtro-dash-data" onchange="window.aoMudarFiltroDash()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Data Final</label>
+                                        <input type="date" id="filtro-dash-data-fim" onchange="window.aoMudarFiltroDash()">
                                     </div>
                                     <div class="form-group">
                                         <label>Filtrar por Funcionário</label>
@@ -1026,33 +2030,30 @@
 
                     <!-- TELA 2: RELATÓRIOS -->
                     <div id="view-relatorios" class="view">
-                        <div class="content-intro">
-                            <h1>Relatórios & Pagamentos</h1>
-                            <p>Acompanhe a prévia de valores em aberto por funcionário, visualize no calendário os dias pendentes e gere recibos.</p>
-                        </div>
-
-                        <!-- CARD GLOBAL DE VALORES EM ABERTO + PRÉVIA POR FUNCIONÁRIO NO TOPO -->
-                        <div class="card" style="background: var(--danger-pale); border-color: #f5d0d0;">
-                            <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <!-- BARRA COMPACTA DE TOPO + TOTAL EM ABERTO -->
+                        <div class="rel-top-bar">
+                            <div class="rel-top-title">
+                                <h1>Relatórios & Pagamentos</h1>
+                                <p>Toque num funcionário abaixo para carregar o período em aberto e gerar o recibo.</p>
+                            </div>
+                            <div class="rel-top-kpi">
                                 <div>
-                                    <h2 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--danger);">Total em Aberto (Rotas Pendentes da Equipa)</h2>
-                                    <p style="color: var(--danger); font-size: 13px; opacity: 0.85; margin-top: 3px;">Confira abaixo a relação completa de funcionários com e sem valores em aberto (clique num funcionário para carregar no filtro).</p>
+                                    <div class="rel-top-kpi-label">Total Geral em Aberto</div>
+                                    <div class="rel-top-kpi-val" id="total-geral-aberto">R$ 0,00</div>
                                 </div>
-                                <h2 style="font-family: 'Space Grotesk'; font-size: clamp(24px, 5vw, 32px); color: var(--danger);" id="total-geral-aberto">R$ 0,00</h2>
+                                <div id="info-total-aberto-mes-anterior" class="rel-top-kpi-sub" style="display: none;"></div>
                             </div>
                         </div>
 
-                        <!-- PRÉVIA DETALHADA DOS FUNCIONÁRIOS E VALORES EM ABERTO -->
+                        <!-- PRÉVIA COMPACTA DOS FUNCIONÁRIOS E VALORES EM ABERTO -->
                         <div class="card">
-                            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--line);">
-                                <div>
-                                    <h2>Relação de Funcionários & Valores em Aberto</h2>
-                                    <p style="font-size: 12px; color: var(--muted); margin-top: 2px;">Veja quem possui saldo em aberto e quem está em dia sem precisar gerar relatório individual. Clique em qualquer funcionário para selecioná-lo.</p>
-                                </div>
+                            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line);">
+                                <h2>Saldos por Funcionário</h2>
                                 <div class="previa-filter-pills">
                                     <button type="button" class="pill-btn active" id="pill-rel-todos" onclick="window.setFiltroPrevia('todos')">Todos</button>
-                                    <button type="button" class="pill-btn" id="pill-rel-abertos" onclick="window.setFiltroPrevia('abertos')">Com Valor em Aberto</button>
-                                    <button type="button" class="pill-btn" id="pill-rel-zerados" onclick="window.setFiltroPrevia('zerados')">Sem Pendências (R$ 0,00)</button>
+                                    <button type="button" class="pill-btn" id="pill-rel-abertos" onclick="window.setFiltroPrevia('abertos')">Em Aberto</button>
+                                    <button type="button" class="pill-btn" id="pill-rel-fechamento" onclick="window.setFiltroPrevia('fechamento')">📅 Mês Ant./Atual</button>
+                                    <button type="button" class="pill-btn" id="pill-rel-zerados" onclick="window.setFiltroPrevia('zerados')">Em Dia</button>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -1060,56 +2061,68 @@
                             </div>
                         </div>
 
-                        <!-- FILTRO DE RELATÓRIO COM CALENDÁRIO PINTADO -->
+                        <!-- FILTRO DE RELATÓRIO COMPACTO COM CALENDÁRIO PINTADO -->
                         <div class="card">
-                            <div class="card-header" style="border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                <div>
-                                    <h2>Filtro de Período & Calendário de Rotas em Aberto</h2>
-                                    <p style="font-size: 12px; color: var(--muted); margin-top: 2px;" id="info-dias-abertos-func">Selecione um funcionário para visualizar pintados no calendário os dias em que ele possui rotas em aberto.</p>
+                            <div class="card-header" style="border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <div style="min-width: 0; flex: 1;">
+                                    <h2>Filtro de Período</h2>
+                                    <p style="font-size: 11.5px; color: var(--muted); margin-top: 1px;" id="info-dias-abertos-func">Selecione um funcionário para destacar os dias no calendário.</p>
                                 </div>
-                                <button type="button" class="btn btn-secondary" id="btn-preencher-periodo-aberto" onclick="window.preencherPeriodoEmAberto()" style="min-height: 36px; font-size: 12px; padding: 0 12px; display: none;">
-                                    ⚡ Selecionar Todo Período em Aberto
-                                </button>
+                                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                    <select id="filtro-relatorio-regra-periodo" onchange="window.aoMudarRegraPeriodoRelatorio()" style="width: auto; min-height: 30px; height: 30px; padding: 2px 8px; font-size: 11.5px; border-radius: 6px;">
+                                        <option value="mes_ant_ou_atual" selected>Regra: Mês Ant. (ou Atual)</option>
+                                        <option value="todo_aberto">Regra: Todo Período Aberto</option>
+                                        <option value="somente_mes_anterior">Regra: Só Mês Anterior</option>
+                                        <option value="somente_mes_atual">Regra: Só Mês Atual</option>
+                                        <option value="personalizado">Regra: Manual</option>
+                                    </select>
+                                    <button type="button" class="btn btn-primary" id="btn-filtrar-mes-ant-atual" onclick="window.aplicarFiltroAbertoMesAnteriorOuAtual(true)" style="min-height: 30px; height: 30px; font-size: 11.5px; padding: 0 10px; border-radius: 6px;">
+                                        📅 Mês Ant./Atual
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="btn-preencher-periodo-aberto" onclick="window.preencherPeriodoEmAberto()" style="min-height: 30px; height: 30px; font-size: 11.5px; padding: 0 10px; border-radius: 6px; display: none;">
+                                        ⚡ Todo Período
+                                    </button>
+                                </div>
                             </div>
                             <div class="card-body">
-                                <form class="form-row" onsubmit="window.gerarRelatorioTela(event)" style="align-items: flex-end; margin-bottom: 0;">
-                                    <div class="form-group">
+                                <form class="rel-filter-grid" onsubmit="window.gerarRelatorioTela(event)">
+                                    <div class="form-group fg-func">
                                         <label>Funcionário</label>
-                                        <select id="filtro-funcionario" required onchange="window.aoSelecionarFuncionarioRelatorio()"></select>
+                                        <select id="filtro-funcionario" required onchange="window.aoSelecionarFuncionarioRelatorio(true)"></select>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group fg-ini">
                                         <label>Data Inicial</label>
                                         <div class="custom-date-wrapper" id="wrapper-data-inicio">
                                             <input type="hidden" id="filtro-data-inicio" required>
                                             <div class="custom-date-trigger" id="trigger-data-inicio" onclick="window.abrirCalendarioCustom('inicio', event)">
-                                                <span id="label-data-inicio" class="placeholder">Selecione a data inicial...</span>
+                                                <span id="label-data-inicio" class="placeholder">Início...</span>
                                                 <span>📅</span>
                                             </div>
                                             <div class="calendar-popover" id="popover-cal-inicio" onclick="event.stopPropagation()"></div>
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group fg-fim">
                                         <label>Data Final</label>
                                         <div class="custom-date-wrapper" id="wrapper-data-fim">
                                             <input type="hidden" id="filtro-data-fim" required>
                                             <div class="custom-date-trigger" id="trigger-data-fim" onclick="window.abrirCalendarioCustom('fim', event)">
-                                                <span id="label-data-fim" class="placeholder">Selecione a data final...</span>
+                                                <span id="label-data-fim" class="placeholder">Fim...</span>
                                                 <span>📅</span>
                                             </div>
                                             <div class="calendar-popover" id="popover-cal-fim" onclick="event.stopPropagation()"></div>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Status do Pagamento</label>
+                                    <div class="form-group fg-status">
+                                        <label>Status</label>
                                         <select id="filtro-relatorio-status" required>
                                             <option value="Não" selected>Em Aberto</option>
                                             <option value="Sim">Pago</option>
                                             <option value="Tudo">Tudo</option>
                                         </select>
                                     </div>
-                                    <div class="form-group" style="display: flex; flex-direction: row; gap: 10px; align-items: flex-end;">
-                                        <button type="submit" class="btn btn-primary" style="flex: 1;">Buscar na Nuvem</button>
-                                        <button type="button" class="btn btn-secondary" onclick="window.limparFiltrosRelatorio()" style="flex: 1;">Limpar Filtro</button>
+                                    <div class="form-group fg-actions" style="display: flex; flex-direction: row; gap: 6px; align-items: flex-end;">
+                                        <button type="submit" class="btn btn-primary" style="flex: 1;">Buscar</button>
+                                        <button type="button" class="btn btn-secondary" onclick="window.limparFiltrosRelatorio()" style="padding: 0 10px;" title="Limpar Filtro">Limpar</button>
                                     </div>
                                 </form>
                             </div>
@@ -1117,11 +2130,11 @@
 
                         <div id="resultado-relatorio" style="display: none;">
                             <div class="card">
-                                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line);">
                                     <h2>Demonstrativo Extraído</h2>
-                                    <button type="button" class="btn btn-success" onclick="window.imprimirPDF()">🖨️ Baixar PDF</button>
+                                    <button type="button" class="btn btn-success" onclick="window.imprimirPDF()" style="min-height: 32px; height: 32px; font-size: 12px; padding: 0 12px; border-radius: 7px;">🖨️ Baixar PDF</button>
                                 </div>
-                                <div class="table-responsive">
+                                <div class="table-responsive rel-table-wrap">
                                     <table>
                                         <thead>
                                             <tr>
@@ -1135,31 +2148,31 @@
                                         <tbody id="tabela-relatorio"></tbody>
                                     </table>
                                 </div>
-                                <!-- TOTAIS DETALHADOS DO RELATÓRIO -->
-                                <div class="card-body" style="background: #fbfcfc; display: flex; justify-content: flex-end; gap: 20px; flex-wrap: wrap; text-align: right; border-top: 1px solid var(--line);">
-                                    <div>
-                                        <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Total Produzido</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--ink);" id="total-relatorio-geral">R$ 0,00</h3>
+                                <!-- TOTAIS DETALHADOS DO RELATÓRIO EM GRADE COMPACTA -->
+                                <div class="rel-kpis-footer">
+                                    <div class="rel-kpi-box">
+                                        <span>Produzido</span>
+                                        <h3 style="color: var(--ink);" id="total-relatorio-geral">R$ 0,00</h3>
                                     </div>
-                                    <div>
-                                        <span style="font-size: 11px; font-weight: 700; color: var(--success); text-transform: uppercase;">Já Pago</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 18px; color: var(--success);" id="total-relatorio-pago">R$ 0,00</h3>
+                                    <div class="rel-kpi-box">
+                                        <span style="color: var(--success);">Já Pago</span>
+                                        <h3 style="color: var(--success);" id="total-relatorio-pago">R$ 0,00</h3>
                                     </div>
-                                    <div>
-                                        <span style="font-size: 11px; font-weight: 700; color: #d89433; text-transform: uppercase;">Descontos Aplicados</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 18px; color: #d89433;" id="total-relatorio-desconto">R$ 0,00</h3>
+                                    <div class="rel-kpi-box">
+                                        <span style="color: #d89433;">Descontos</span>
+                                        <h3 style="color: #d89433;" id="total-relatorio-desconto">R$ 0,00</h3>
                                     </div>
-                                    <div style="border-left: 2px solid var(--line); padding-left: 20px;">
-                                        <span style="font-size: 12px; font-weight: 700; color: var(--danger); text-transform: uppercase;">Em Aberto (A Receber)</span>
-                                        <h3 style="font-family: 'Space Grotesk'; font-size: 24px; color: var(--danger);" id="total-relatorio-aberto">R$ 0,00</h3>
+                                    <div class="rel-kpi-box destaque">
+                                        <span style="color: var(--danger);">A Receber</span>
+                                        <h3 style="color: var(--danger);" id="total-relatorio-aberto">R$ 0,00</h3>
                                     </div>
                                 </div>
-                                <!-- AÇÃO DE PAGAMENTO DO RECIBO (INTEGRAÇÃO COM VISÃO GERAL & LANÇAMENTOS) -->
-                                <div class="card-body" style="background: #eef9f8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-top: 1px solid var(--line); border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md);">
-                                    <div id="resumo-pagamento-recibo" style="font-size: 13px; color: var(--ink-2); font-weight: 600;">
-                                        Baixe todos os lançamentos pendentes deste recibo diretamente por aqui.
+                                <!-- AÇÃO DE PAGAMENTO DO RECIBO -->
+                                <div class="card-body" style="background: #eef9f8; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                                    <div id="resumo-pagamento-recibo" style="font-size: 12px; color: var(--ink-2); font-weight: 600;">
+                                        Baixe os lançamentos pendentes deste recibo diretamente por aqui.
                                     </div>
-                                    <button type="button" class="btn btn-success" id="btn-pagar-recibo" onclick="window.abrirModalPagamentoRecibo()" style="min-width: 200px;">
+                                    <button type="button" class="btn btn-success" id="btn-pagar-recibo" onclick="window.abrirModalPagamentoRecibo()" style="min-height: 36px; height: 36px; font-size: 12.5px; padding: 0 16px; border-radius: 8px;">
                                         💳 Pagar
                                     </button>
                                 </div>
@@ -1346,6 +2359,143 @@
                         </div>
                     </div>
 
+                    <!-- TELA 5: RANKING DE PRODUÇÃO (MENSAL COM HISTÓRICO PRESERVADO) -->
+                    <div id="view-ranking" class="view">
+                        <!-- HERO DO RANKING -->
+                        <div class="ranking-hero">
+                            <div class="ranking-hero-top">
+                                <div class="ranking-hero-title">
+                                    <div class="ranking-trophy-icon">🏆</div>
+                                    <div>
+                                        <h1 id="ranking-titulo-mes">Arena de Produção — Ranking do Mês</h1>
+                                        <p>Classificação oficial de rotas realizadas pela equipa. Reinicia todo dia 1º mantendo todos os meses anteriores salvos!</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <button type="button" class="ranking-month-btn" id="btn-abrir-config-metas" style="background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.32); color: #fff;" onclick="window.abrirModalConfigMetas()">
+                                        ⚙️ Configurar Metas
+                                    </button>
+                                    <button type="button" class="ranking-month-btn" style="background: linear-gradient(135deg, #fde047, #f59e0b); color: #13212f; border: none;" onclick="window.dispararConfetesRanking()">
+                                        🎉 Celebrar Campeões
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="ranking-controls-bar">
+                                <div class="ranking-month-nav">
+                                    <button type="button" class="ranking-month-btn" onclick="window.navegarMesRanking(-1)" title="Mês Anterior">◀ Anterior</button>
+                                    <select id="ranking-select-mes" class="ranking-month-select" onchange="window.aoMudarMesRanking(this.value)"></select>
+                                    <button type="button" class="ranking-month-btn" onclick="window.navegarMesRanking(1)" title="Próximo Mês">Próximo ▶</button>
+                                    <button type="button" class="ranking-month-btn" onclick="window.irParaMesAtualRanking()">📅 Mês Atual</button>
+                                </div>
+                                <div class="ranking-cycle-status" id="ranking-status-ciclo">
+                                    <span>🟢 Ciclo Mensal Ativo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KPIS DO MÊS NO RANKING -->
+                        <div class="ranking-kpis-grid">
+                            <div class="ranking-kpi-card">
+                                <div class="ranking-kpi-icon" style="background: #fef3c7; color: #d97706;">🚀</div>
+                                <div class="ranking-kpi-info">
+                                    <span>Total de Rotas no Mês</span>
+                                    <strong id="rk-kpi-total-rotas">0 rotas</strong>
+                                    <small id="rk-kpi-total-lanc">0 lançamentos</small>
+                                </div>
+                            </div>
+                            <div class="ranking-kpi-card">
+                                <div class="ranking-kpi-icon" style="background: #e5f7f5; color: #087b79;">👑</div>
+                                <div class="ranking-kpi-info">
+                                    <span>Líder do Mês</span>
+                                    <strong id="rk-kpi-lider-nome">-</strong>
+                                    <small id="rk-kpi-lider-rotas">0 rotas</small>
+                                </div>
+                            </div>
+                            <div class="ranking-kpi-card">
+                                <div class="ranking-kpi-icon" style="background: #eaf6fb; color: #318eb4;">⚡</div>
+                                <div class="ranking-kpi-info">
+                                    <span>Média por Funcionário</span>
+                                    <strong id="rk-kpi-media">0,0 rotas</strong>
+                                    <small id="rk-kpi-ativos">0 participantes ativos</small>
+                                </div>
+                            </div>
+                            <div class="ranking-kpi-card" style="cursor: pointer;" onclick="window.abrirModalConfigMetas()" title="Clique para configurar as metas mensais de Motorista e Ajudante">
+                                <div class="ranking-kpi-icon" style="background: #dcfce7; color: #16a34a;">🎯</div>
+                                <div class="ranking-kpi-info">
+                                    <span>Metas Mensais Batidas</span>
+                                    <strong id="rk-kpi-recorde-qtd">0 bateram a meta</strong>
+                                    <small id="rk-kpi-recorde-nome">Mot: 30 | Aju: 25 rotas</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FILTROS RÁPIDOS DE CATEGORIA E BUSCA -->
+                        <div class="card" style="margin-bottom: 14px; border-radius: 12px;">
+                            <div class="card-body" style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div class="previa-filter-pills">
+                                    <button type="button" class="pill-btn active" id="pill-rk-todos" onclick="window.setCategoriaRanking('Todos')">🏆 Geral (Todos)</button>
+                                    <button type="button" class="pill-btn" id="pill-rk-mot" onclick="window.setCategoriaRanking('Motorista')">🚗 Só Motoristas</button>
+                                    <button type="button" class="pill-btn" id="pill-rk-aju" onclick="window.setCategoriaRanking('Ajudante')">📦 Só Ajudantes</button>
+                                </div>
+                                <div style="flex: 1; min-width: 200px; max-width: 300px;">
+                                    <input type="text" id="ranking-busca-nome" placeholder="🔍 Buscar funcionário no ranking..." oninput="window.atualizarRankingProducao()" style="min-height: 34px; height: 34px; padding: 4px 12px; font-size: 12.5px; border-radius: 999px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PALCO DO PÓDIO TOP 3 -->
+                        <div class="ranking-podium-stage">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                                <div>
+                                    <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; color: var(--ink);">🥇 Pódio Oficial — Top 3 do Mês</h2>
+                                    <p style="font-size: 11.5px; color: var(--muted);">Clique em qualquer colocado para inspecionar o histórico detalhado de rotas do mês.</p>
+                                </div>
+                                <span id="ranking-badge-mes-ativo" class="badge badge-mot" style="font-size: 11px; padding: 4px 10px;">Mês Atual</span>
+                            </div>
+                            <div id="ranking-podium-container" class="ranking-podium-grid"></div>
+                        </div>
+
+                        <!-- TABELA COMPLETA DE CLASSIFICAÇÃO -->
+                        <div class="card" style="border-radius: 14px; margin-bottom: 16px;">
+                            <div class="card-header" style="padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <h2 style="font-size: 15px;">Classificação Detalhada de Produção</h2>
+                                    <p style="font-size: 11.5px; color: var(--muted);">Ranking completo ordenado pelo total de rotas realizadas no mês selecionado (critério de desempate: nº de dias ativos).</p>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table style="min-width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 64px; text-align: center; padding: 10px 8px;">Pos.</th>
+                                            <th style="padding: 10px 12px;">Funcionário & Conquistas</th>
+                                            <th style="padding: 10px 12px;">Progresso vs. 1º Lugar</th>
+                                            <th style="padding: 10px 12px; text-align: center;">Dias Ativos</th>
+                                            <th style="padding: 10px 12px; text-align: center;">Média / Dia</th>
+                                            <th style="padding: 10px 12px; text-align: center;">Turno Principal</th>
+                                            <th style="padding: 10px 14px; text-align: right;">Total de Rotas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-ranking-detalhado"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- GALERIA HISTÓRICA DE CAMPEÕES (MESES ANTERIORES PRESERVADOS) -->
+                        <div class="card" style="border-radius: 14px;">
+                            <div class="card-header" style="padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <h2 style="font-size: 15px;">🏛️ Galeria de Campeões — Histórico de Meses Anteriores</h2>
+                                    <p style="font-size: 11.5px; color: var(--muted);">Todo dia 1º um novo ciclo se inicia, mas os campeões e rankings dos meses passados ficam eternizados aqui. Clique num mês para abrir.</p>
+                                </div>
+                            </div>
+                            <div class="card-body" style="padding: 14px 16px;">
+                                <div id="ranking-historico-galeria" class="history-champions-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </main>
         </div>
@@ -1387,7 +2537,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy, limit, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -1420,8 +2570,158 @@
         let selecionadosLanc = new Set();
         let lancamentosVisiveisAtuais = [];
 
-        // Estado para o filtro da Prévia de Funcionários ('todos' | 'abertos' | 'zerados')
+        // Estado para o filtro da Prévia de Funcionários ('todos' | 'abertos' | 'fechamento' | 'zerados')
         let filtroPreviaModo = 'todos';
+
+        // Estado para Sincronização em Tempo Real (onSnapshot + BroadcastChannel)
+        let listenersTempoReal = [];
+        let mapaLancRecentes = new Map();
+        let mapaLancPendentes = new Map();
+        let mapaLancExtras = new Map();
+        let carregamentoInicialConcluido = false;
+        let idsRecemDestacados = new Set();
+        let canalSyncLocal = null;
+        try {
+            if (typeof BroadcastChannel !== 'undefined') {
+                canalSyncLocal = new BroadcastChannel('lv_producao_realtime_sync');
+                canalSyncLocal.onmessage = (ev) => {
+                    if (ev && ev.data && ev.data.tipo === 'rota_incluida' && ev.data.registro) {
+                        const reg = ev.data.registro;
+                        if (reg.id) {
+                            mapaLancRecentes.set(reg.id, reg);
+                            if (reg.statusPagamento !== 'Sim') mapaLancPendentes.set(reg.id, reg);
+                            idsRecemDestacados.add(reg.id);
+                            reconstruirLancamentosDB();
+                            window.atualizarInterfaces();
+                        }
+                    }
+                };
+            }
+        } catch (errBC) {
+            console.warn("BroadcastChannel indisponível:", errBC);
+        }
+
+        // Helpers de Ordenação: PRIMEIRAMENTE A DATA E DEPOIS A ORDEM DE CRIADA
+        function obterTimestampCriacao(item) {
+            if (!item) return 0;
+            if (typeof item.ordemCriacao === 'number' && !isNaN(item.ordemCriacao)) {
+                return item.ordemCriacao;
+            }
+            if (item.criadoEm) {
+                if (typeof item.criadoEm === 'number') return item.criadoEm;
+                if (typeof item.criadoEm === 'string') {
+                    const parsed = Date.parse(item.criadoEm);
+                    if (!isNaN(parsed)) return parsed;
+                }
+                if (typeof item.criadoEm.toMillis === 'function') return item.criadoEm.toMillis();
+                if (typeof item.criadoEm.seconds === 'number') return item.criadoEm.seconds * 1000;
+            }
+            return 0;
+        }
+
+        // Para Relatórios: ordem cronológica de data (crescente) e depois ordem de criação
+        function compararPorDataECriacao(a, b) {
+            const dataA = a.data || '';
+            const dataB = b.data || '';
+            if (dataA !== dataB) {
+                return dataA.localeCompare(dataB);
+            }
+            const tsA = obterTimestampCriacao(a);
+            const tsB = obterTimestampCriacao(b);
+            if (tsA !== tsB) {
+                return tsA - tsB;
+            }
+            const strA = String(a.criadoEm || '');
+            const strB = String(b.criadoEm || '');
+            if (strA !== strB) {
+                return strA.localeCompare(strB);
+            }
+            return String(a.id || '').localeCompare(String(b.id || ''));
+        }
+
+        // Para Visão Geral & Lançamentos: datas mais recentes no topo e mais antigas no final, mantendo a ordem de criação na mesma data
+        function compararPorDataDecrescenteECriacao(a, b) {
+            const dataA = a.data || '';
+            const dataB = b.data || '';
+            if (dataA !== dataB) {
+                return dataB.localeCompare(dataA);
+            }
+            const tsA = obterTimestampCriacao(a);
+            const tsB = obterTimestampCriacao(b);
+            if (tsA !== tsB) {
+                return tsA - tsB;
+            }
+            const strA = String(a.criadoEm || '');
+            const strB = String(b.criadoEm || '');
+            if (strA !== strB) {
+                return strA.localeCompare(strB);
+            }
+            return String(a.id || '').localeCompare(String(b.id || ''));
+        }
+
+        function formatarDataLocalISO(dateObj) {
+            const ano = dateObj.getFullYear();
+            const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dia = String(dateObj.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function obterLimitesMesAnteriorEAtual() {
+            const hoje = new Date();
+            const anoAtual = hoje.getFullYear();
+            const mesAtual = hoje.getMonth();
+
+            const inicioMesAnterior = new Date(anoAtual, mesAtual - 1, 1);
+            const fimMesAnterior = new Date(anoAtual, mesAtual, 0);
+            const inicioMesAtual = new Date(anoAtual, mesAtual, 1);
+            const fimMesAtual = new Date(anoAtual, mesAtual + 1, 0);
+
+            return {
+                inicioMesAnteriorISO: formatarDataLocalISO(inicioMesAnterior),
+                fimMesAnteriorISO: formatarDataLocalISO(fimMesAnterior),
+                inicioMesAtualISO: formatarDataLocalISO(inicioMesAtual),
+                fimMesAtualISO: formatarDataLocalISO(fimMesAtual),
+                nomeMesAnterior: `${NOMES_MESES[inicioMesAnterior.getMonth()]}/${inicioMesAnterior.getFullYear()}`,
+                nomeMesAtual: `${NOMES_MESES[inicioMesAtual.getMonth()]}/${inicioMesAtual.getFullYear()}`
+            };
+        }
+
+        function reconstruirLancamentosDB() {
+            const mapaUnificado = new Map();
+            mapaLancExtras.forEach((v, k) => mapaUnificado.set(k, v));
+            mapaLancRecentes.forEach((v, k) => mapaUnificado.set(k, v));
+            mapaLancPendentes.forEach((v, k) => mapaUnificado.set(k, v));
+            lancamentosDB = Array.from(mapaUnificado.values()).sort(compararPorDataDecrescenteECriacao);
+        }
+
+        function atualizarRelatorioAbertoEmTempoReal() {
+            if (!dadosRelatorioAtual || !dadosRelatorioAtual.idFuncionario) return;
+            const resRel = document.getElementById('resultado-relatorio');
+            if (!resRel || resRel.style.display === 'none') return;
+
+            const idFunc = dadosRelatorioAtual.idFuncionario;
+            const dataIn = dadosRelatorioAtual.dataInicio;
+            const dataFim = dadosRelatorioAtual.dataFim;
+            const statusFiltro = dadosRelatorioAtual.statusFiltro || 'Não';
+
+            const filtrados = [];
+            lancamentosDB.forEach(d => {
+                if (d.idFuncionario === idFunc && d.data >= dataIn && d.data <= dataFim) {
+                    const isPago = d.statusPagamento === 'Sim';
+                    if (statusFiltro === 'Tudo' || (statusFiltro === 'Sim' && isPago) || (statusFiltro === 'Não' && !isPago)) {
+                        filtrados.push({ ...d, tipo: 'rota' });
+                    }
+                }
+            });
+            descontosDB.forEach(d => {
+                if (d.idFuncionario === idFunc && d.data >= dataIn && d.data <= dataFim) {
+                    filtrados.push({ ...d, tipo: 'desconto' });
+                }
+            });
+            filtrados.sort(compararPorDataECriacao);
+            dadosRelatorioAtual.lancamentos = filtrados;
+            window.renderizarDadosRelatorioNaTela();
+        }
 
         // Estado para o Calendário Customizado de Relatórios
         let calendarioAtivo = null; // 'inicio' | 'fim' | null
@@ -1504,6 +2804,11 @@
                     document.getElementById('topbar-title').innerText = botao.innerText;
                 }
                 window.fecharCalendariosCustom();
+                if (idAba === 'view-ranking') {
+                    window.garantirDadosMesRanking(window.obterMesSelecionadoRanking());
+                    window.atualizarRankingProducao();
+                    window.dispararConfetesRanking(38);
+                }
             } catch (error) { console.error(error); }
         };
 
@@ -1548,13 +2853,22 @@
                 });
         };
 
+        function limparListenersTempoReal() {
+            listenersTempoReal.forEach(unsub => {
+                try { if (typeof unsub === 'function') unsub(); } catch (e) {}
+            });
+            listenersTempoReal = [];
+            carregamentoInicialConcluido = false;
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('view-login').classList.remove('active');
                 document.getElementById('view-app-main').classList.add('active');
-                document.getElementById('loading-text').innerText = "A sincronizar com a base de dados...";
+                document.getElementById('loading-text').innerText = "A sincronizar em tempo real com a base de dados...";
                 carregarDadosDoFirebase();
             } else {
+                limparListenersTempoReal();
                 document.getElementById('loading-global').style.display = 'none';
                 document.getElementById('view-app-main').classList.remove('active');
                 document.getElementById('view-login').classList.add('active');
@@ -1563,67 +2877,165 @@
 
         async function carregarDadosDoFirebase() {
             try {
-                funcionariosDB = [];
-                const queryFuncs = await getDocs(collection(db, "funcionarios"));
-                queryFuncs.forEach(d => {
-                    funcionariosDB.push({ id: d.id, ...d.data() });
-                });
+                limparListenersTempoReal();
 
-                veiculosDB = [];
-                const queryVeic = await getDocs(collection(db, "veiculos"));
-                queryVeic.forEach(d => {
-                    veiculosDB.push({ id: d.id, ...d.data() });
-                });
-
-                const mapaLanc = new Map();
-                const qLancRecentes = query(collection(db, "producao_lancamentos"), orderBy("data", "desc"), limit(200));
-                const queryLanc = await getDocs(qLancRecentes);
-                queryLanc.forEach(d => {
-                    mapaLanc.set(d.id, { id: d.id, ...d.data() });
-                });
-
-                // Garante também que todas as rotas pendentes ("Não") estejam carregadas para a prévia e calendário
-                try {
-                    const qPendentes = query(collection(db, "producao_lancamentos"), where("statusPagamento", "==", "Não"));
-                    const snapPendentes = await getDocs(qPendentes);
-                    snapPendentes.forEach(d => {
-                        mapaLanc.set(d.id, { id: d.id, ...d.data() });
-                    });
-                } catch (errPend) {
-                    console.warn("Aviso ao buscar pendentes extras:", errPend);
-                }
-
-                lancamentosDB = Array.from(mapaLanc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-
-                descontosDB = [];
-                const qDesc = query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(150));
-                const queryDesc = await getDocs(qDesc);
-                queryDesc.forEach(d => {
-                    descontosDB.push({ id: d.id, ...d.data() });
-                });
-
-                descontosFuturosDB = [];
-                try {
-                    const qDescFut = query(collection(db, "producao_descontos_futuros"), orderBy("data", "desc"), limit(150));
-                    const queryDescFut = await getDocs(qDescFut);
-                    queryDescFut.forEach(d => {
-                        descontosFuturosDB.push({ id: d.id, ...d.data() });
-                    });
-                } catch (errFut) {
-                    console.warn("Aviso ao carregar descontos futuros:", errFut);
-                }
-
-                const dataHoje = new Date().toISOString().split('T')[0];
+                const dataHoje = formatarDataLocalISO(new Date());
                 document.getElementById('lanc-data').value = dataHoje;
                 document.getElementById('desc-data').value = dataHoje;
                 if (document.getElementById('descfut-data')) {
                     document.getElementById('descfut-data').value = dataHoje;
                 }
-
-                // Garante filtro de status padrão em "Pendentes" ("Não")
                 document.getElementById('filtro-dash-status').value = 'Não';
 
+                // Carregamento inicial rápido + ativação dos listeners em tempo real (onSnapshot)
+                const [queryFuncs, queryVeic, queryLanc, queryDesc] = await Promise.all([
+                    getDocs(collection(db, "funcionarios")),
+                    getDocs(collection(db, "veiculos")),
+                    getDocs(query(collection(db, "producao_lancamentos"), orderBy("data", "desc"), limit(300))),
+                    getDocs(query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(200)))
+                ]);
+
+                funcionariosDB = [];
+                queryFuncs.forEach(d => funcionariosDB.push({ id: d.id, ...d.data() }));
+
+                veiculosDB = [];
+                queryVeic.forEach(d => veiculosDB.push({ id: d.id, ...d.data() }));
+
+                mapaLancRecentes.clear();
+                queryLanc.forEach(d => mapaLancRecentes.set(d.id, { id: d.id, ...d.data() }));
+
+                try {
+                    const snapPendentes = await getDocs(query(collection(db, "producao_lancamentos"), where("statusPagamento", "==", "Não")));
+                    mapaLancPendentes.clear();
+                    snapPendentes.forEach(d => mapaLancPendentes.set(d.id, { id: d.id, ...d.data() }));
+                } catch (errPend) {
+                    console.warn("Aviso ao buscar pendentes extras:", errPend);
+                }
+
+                reconstruirLancamentosDB();
+
+                descontosDB = [];
+                queryDesc.forEach(d => descontosDB.push({ id: d.id, ...d.data() }));
+                descontosDB.sort(compararPorDataECriacao);
+
+                descontosFuturosDB = [];
+                try {
+                    const queryDescFut = await getDocs(query(collection(db, "producao_descontos_futuros"), orderBy("data", "desc"), limit(150)));
+                    queryDescFut.forEach(d => descontosFuturosDB.push({ id: d.id, ...d.data() }));
+                } catch (errFut) {
+                    console.warn("Aviso ao carregar descontos futuros:", errFut);
+                }
+
                 window.atualizarInterfaces();
+                carregamentoInicialConcluido = true;
+
+                // --- LISTENERS EM TEMPO REAL PARA TODOS OS DISPOSITIVOS CONECTADOS ---
+                const qLancRecentesRT = query(collection(db, "producao_lancamentos"), orderBy("data", "desc"), limit(300));
+                const unsubLancRecentes = onSnapshot(qLancRecentesRT, (snapshot) => {
+                    let houveInclusaoRemota = false;
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'removed') {
+                            mapaLancRecentes.delete(change.doc.id);
+                            mapaLancPendentes.delete(change.doc.id);
+                            mapaLancExtras.delete(change.doc.id);
+                        } else {
+                            const dados = { id: change.doc.id, ...change.doc.data() };
+                            const jaExistia = mapaLancRecentes.has(change.doc.id) || mapaLancPendentes.has(change.doc.id) || mapaLancExtras.has(change.doc.id);
+                            mapaLancRecentes.set(change.doc.id, dados);
+                            if (dados.statusPagamento !== 'Sim') {
+                                mapaLancPendentes.set(change.doc.id, dados);
+                            } else {
+                                mapaLancPendentes.delete(change.doc.id);
+                            }
+                            if (carregamentoInicialConcluido && change.type === 'added' && !jaExistia) {
+                                idsRecemDestacados.add(change.doc.id);
+                                houveInclusaoRemota = true;
+                            }
+                        }
+                    });
+                    reconstruirLancamentosDB();
+                    window.atualizarInterfaces();
+                    atualizarRelatorioAbertoEmTempoReal();
+                    if (houveInclusaoRemota) {
+                        window.mostrarNotificacao("🔄 Nova produção sincronizada em tempo real!", "info");
+                    }
+                }, (err) => console.warn("Erro listener lancamentos recentes:", err));
+
+                const qPendentesRT = query(collection(db, "producao_lancamentos"), where("statusPagamento", "==", "Não"));
+                const unsubLancPendentes = onSnapshot(qPendentesRT, (snapshot) => {
+                    let houveInclusaoRemota = false;
+                    const idsAtuaisPendentes = new Set();
+                    snapshot.docs.forEach(d => idsAtuaisPendentes.add(d.id));
+
+                    snapshot.docChanges().forEach(change => {
+                        const docId = change.doc.id;
+                        if (change.type === 'removed') {
+                            mapaLancPendentes.delete(docId);
+                        } else {
+                            const dados = { id: docId, ...change.doc.data() };
+                            const jaExistia = mapaLancRecentes.has(docId) || mapaLancPendentes.has(docId) || mapaLancExtras.has(docId);
+                            mapaLancPendentes.set(docId, dados);
+                            if (mapaLancRecentes.has(docId)) {
+                                mapaLancRecentes.set(docId, dados);
+                            }
+                            if (carregamentoInicialConcluido && change.type === 'added' && !jaExistia) {
+                                idsRecemDestacados.add(docId);
+                                houveInclusaoRemota = true;
+                            }
+                        }
+                    });
+
+                    // Limpa do mapa de pendentes os que deixaram de ser pendentes
+                    Array.from(mapaLancPendentes.keys()).forEach(k => {
+                        if (!idsAtuaisPendentes.has(k)) {
+                            mapaLancPendentes.delete(k);
+                        }
+                    });
+
+                    reconstruirLancamentosDB();
+                    window.atualizarInterfaces();
+                    atualizarRelatorioAbertoEmTempoReal();
+                    if (houveInclusaoRemota) {
+                        window.mostrarNotificacao("🔄 Nova produção sincronizada em tempo real!", "info");
+                    }
+                }, (err) => console.warn("Erro listener pendentes:", err));
+
+                const unsubDescontos = onSnapshot(query(collection(db, "producao_descontos"), orderBy("data", "desc"), limit(200)), (snapshot) => {
+                    const mapaDesc = new Map();
+                    snapshot.docs.forEach(d => mapaDesc.set(d.id, { id: d.id, ...d.data() }));
+                    descontosDB = Array.from(mapaDesc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+                    window.atualizarInterfaces();
+                    atualizarRelatorioAbertoEmTempoReal();
+                }, (err) => console.warn("Erro listener descontos:", err));
+
+                const unsubDescontosFut = onSnapshot(query(collection(db, "producao_descontos_futuros"), orderBy("data", "desc"), limit(150)), (snapshot) => {
+                    const mapaFut = new Map();
+                    snapshot.docs.forEach(d => mapaFut.set(d.id, { id: d.id, ...d.data() }));
+                    descontosFuturosDB = Array.from(mapaFut.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+                    window.atualizarTabelaDescontosFuturos();
+                }, (err) => console.warn("Erro listener descontos futuros:", err));
+
+                const unsubFuncs = onSnapshot(collection(db, "funcionarios"), (snapshot) => {
+                    funcionariosDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    window.atualizarInterfaces();
+                }, (err) => console.warn("Erro listener funcionarios:", err));
+
+                const unsubVeics = onSnapshot(collection(db, "veiculos"), (snapshot) => {
+                    veiculosDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    window.atualizarInterfaces();
+                }, (err) => console.warn("Erro listener veiculos:", err));
+
+                const unsubMetas = onSnapshot(doc(db, "producao_config", "metas_ranking"), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const dadosMetas = docSnap.data();
+                        if (dadosMetas && typeof window.aplicarMetasRecebidas === 'function') {
+                            window.aplicarMetasRecebidas(dadosMetas);
+                        }
+                    }
+                }, (err) => console.warn("Aviso listener metas:", err));
+
+                listenersTempoReal.push(unsubLancRecentes, unsubLancPendentes, unsubDescontos, unsubDescontosFut, unsubFuncs, unsubVeics, unsubMetas);
+
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
                 window.mostrarNotificacao("Erro ao sincronizar com a base de dados.", "error");
@@ -1649,13 +3061,42 @@
             }
         };
 
-        window.aoMudarFiltroDash = function() {
+        window.aoMudarFiltroDash = async function() {
             selecionadosLanc.clear();
+            const fDataIni = document.getElementById('filtro-dash-data')?.value || '';
+            const fDataFim = document.getElementById('filtro-dash-data-fim')?.value || '';
+
+            if (fDataIni || fDataFim) {
+                try {
+                    let qPeriodo;
+                    if (fDataIni && fDataFim) {
+                        qPeriodo = query(collection(db, "producao_lancamentos"), where("data", ">=", fDataIni), where("data", "<=", fDataFim));
+                    } else if (fDataIni) {
+                        qPeriodo = query(collection(db, "producao_lancamentos"), where("data", ">=", fDataIni));
+                    } else {
+                        qPeriodo = query(collection(db, "producao_lancamentos"), where("data", "<=", fDataFim));
+                    }
+                    const snapPeriodo = await getDocs(qPeriodo);
+                    snapPeriodo.forEach(d => {
+                        const dados = { id: d.id, ...d.data() };
+                        mapaLancExtras.set(d.id, dados);
+                        if (dados.statusPagamento !== 'Sim') {
+                            mapaLancPendentes.set(d.id, dados);
+                        }
+                    });
+                    reconstruirLancamentosDB();
+                } catch (errFiltroPeriodo) {
+                    console.warn("Aviso ao consultar período no Firebase:", errFiltroPeriodo);
+                }
+            }
             window.atualizarInterfaces();
         };
 
         window.limparFiltrosDash = function() {
-            document.getElementById('filtro-dash-data').value = '';
+            const elIni = document.getElementById('filtro-dash-data');
+            const elFim = document.getElementById('filtro-dash-data-fim');
+            if (elIni) elIni.value = '';
+            if (elFim) elFim.value = '';
             document.getElementById('filtro-dash-funcionario').value = '';
             // Mantém por padrão em "Pendentes" ("Não") conforme solicitado
             document.getElementById('filtro-dash-status').value = 'Não';
@@ -1672,14 +3113,23 @@
         // --- PRÉVIA DE FUNCIONÁRIOS E VALORES EM ABERTO (EXCLUSIVA DA ABA RELATÓRIOS) ---
         window.setFiltroPrevia = function(modo) {
             filtroPreviaModo = modo;
-            ['todos', 'abertos', 'zerados'].forEach(m => {
+            ['todos', 'abertos', 'fechamento', 'zerados'].forEach(m => {
                 const pRel = document.getElementById(`pill-rel-${m}`);
                 if (pRel) pRel.classList.toggle('active', m === modo);
             });
+            if (modo === 'fechamento') {
+                const selRegra = document.getElementById('filtro-relatorio-regra-periodo');
+                if (selRegra) selRegra.value = 'mes_ant_ou_atual';
+                const idFuncSel = document.getElementById('filtro-funcionario')?.value;
+                if (idFuncSel) {
+                    window.aplicarFiltroAbertoMesAnteriorOuAtual(true);
+                }
+            }
             window.renderizarPreviaFuncionarios();
         };
 
         window.calcularResumoAbertoPorFuncionario = function() {
+            const { fimMesAnteriorISO, fimMesAtualISO } = obterLimitesMesAnteriorEAtual();
             const funcAptos = funcionariosDB.filter(f => f.funcao === 'Motorista' || f.funcao === 'Ajudante');
             const mapaResumo = new Map();
 
@@ -1692,7 +3142,13 @@
                     valorRotasAberto: 0,
                     qtdRotasAberto: 0,
                     qtdLancamentosAberto: 0,
-                    diasAbertos: new Set()
+                    diasAbertos: new Set(),
+                    valorAteMesAnt: 0,
+                    qtdRotasAteMesAnt: 0,
+                    diasAteMesAnt: new Set(),
+                    valorAteMesAtual: 0,
+                    qtdRotasAteMesAtual: 0,
+                    diasAteMesAtual: new Set()
                 });
             });
 
@@ -1706,32 +3162,64 @@
                             valorRotasAberto: 0,
                             qtdRotasAberto: 0,
                             qtdLancamentosAberto: 0,
-                            diasAbertos: new Set()
+                            diasAbertos: new Set(),
+                            valorAteMesAnt: 0,
+                            qtdRotasAteMesAnt: 0,
+                            diasAteMesAnt: new Set(),
+                            valorAteMesAtual: 0,
+                            qtdRotasAteMesAtual: 0,
+                            diasAteMesAtual: new Set()
                         });
                     }
                     const item = mapaResumo.get(l.idFuncionario);
-                    item.valorRotasAberto += (Number(l.valorTotal) || 0);
-                    item.qtdRotasAberto += (Number(l.qtd) || 0);
+                    const val = Number(l.valorTotal) || 0;
+                    const qtd = Number(l.qtd) || 0;
+                    item.valorRotasAberto += val;
+                    item.qtdRotasAberto += qtd;
                     item.qtdLancamentosAberto += 1;
-                    if (l.data) item.diasAbertos.add(l.data);
+                    if (l.data) {
+                        item.diasAbertos.add(l.data);
+                        if (l.data <= fimMesAnteriorISO) {
+                            item.valorAteMesAnt += val;
+                            item.qtdRotasAteMesAnt += qtd;
+                            item.diasAteMesAnt.add(l.data);
+                        }
+                        if (l.data <= fimMesAtualISO) {
+                            item.valorAteMesAtual += val;
+                            item.qtdRotasAteMesAtual += qtd;
+                            item.diasAteMesAtual.add(l.data);
+                        }
+                    }
                 }
             });
 
-            const lista = Array.from(mapaResumo.values());
-            // Ordena primeiro quem tem maior valor em aberto, depois por ordem alfabética
+            const lista = Array.from(mapaResumo.values()).map(item => {
+                // Regra: pega tudo em aberto até o final do mês anterior se houver; senão pega até o final do mês atual
+                const usaMesAnt = item.valorAteMesAnt > 0;
+                return {
+                    ...item,
+                    usaMesAnterior: usaMesAnt,
+                    valorFechamentoRegra: usaMesAnt ? item.valorAteMesAnt : item.valorAteMesAtual,
+                    qtdRotasFechamentoRegra: usaMesAnt ? item.qtdRotasAteMesAnt : item.qtdRotasAteMesAtual,
+                    diasFechamentoRegra: usaMesAnt ? item.diasAteMesAnt : item.diasAteMesAtual
+                };
+            });
+
             lista.sort((a, b) => {
-                if (b.valorRotasAberto !== a.valorRotasAberto) {
-                    return b.valorRotasAberto - a.valorRotasAberto;
-                }
+                const vA = filtroPreviaModo === 'fechamento' ? a.valorFechamentoRegra : a.valorRotasAberto;
+                const vB = filtroPreviaModo === 'fechamento' ? b.valorFechamentoRegra : b.valorRotasAberto;
+                if (vB !== vA) return vB - vA;
                 return a.nome.localeCompare(b.nome);
             });
             return lista;
         };
 
         window.renderizarPreviaFuncionarios = function() {
+            const { fimMesAnteriorISO, fimMesAtualISO } = obterLimitesMesAnteriorEAtual();
             const listaCompleta = window.calcularResumoAbertoPorFuncionario();
             const listaFiltrada = listaCompleta.filter(item => {
                 if (filtroPreviaModo === 'abertos') return item.valorRotasAberto > 0;
+                if (filtroPreviaModo === 'fechamento') return item.valorFechamentoRegra > 0;
                 if (filtroPreviaModo === 'zerados') return item.valorRotasAberto <= 0;
                 return true;
             });
@@ -1747,23 +3235,38 @@
             }
 
             containerRel.innerHTML = listaFiltrada.map(item => {
-                const temAberto = item.valorRotasAberto > 0;
+                const valorExibido = filtroPreviaModo === 'fechamento' ? item.valorFechamentoRegra : item.valorRotasAberto;
+                const qtdRotasExibida = filtroPreviaModo === 'fechamento' ? item.qtdRotasFechamentoRegra : item.qtdRotasAberto;
+                const qtdDiasExibida = filtroPreviaModo === 'fechamento' ? item.diasFechamentoRegra.size : item.diasAbertos.size;
+                const temAberto = valorExibido > 0;
                 const classeEstado = temAberto ? 'tem-aberto' : 'sem-aberto';
                 const classeAtivo = (idRelSel && idRelSel === item.id) ? 'selecionado-ativo' : '';
                 const badgeClass = item.funcao === 'Motorista' ? 'badge-mot' : 'badge-aju';
-                const qtdDias = item.diasAbertos.size;
-                const subtexto = temAberto
-                    ? `<span><strong>${item.qtdRotasAberto}</strong> rota(s) em <strong>${qtdDias}</strong> dia(s)</span><span style="color: var(--danger); font-weight: 700;">Pendente</span>`
-                    : `<span>Nenhuma rota pendente</span><span style="color: var(--success); font-weight: 700;">Em dia ✓</span>`;
+                const abrevFunc = item.funcao === 'Motorista' ? 'MOT' : 'AJU';
+
+                let tagDireita = `<span style="color: var(--success); font-weight: 700;">Em dia ✓</span>`;
+                if (temAberto) {
+                    if (item.usaMesAnterior) {
+                        tagDireita = `<span class="previa-tag-ciclo ant" title="Valor em aberto até ${formatarData(fimMesAnteriorISO)}">Mês ant.: ${formatarMoeda(item.valorAteMesAnt)}</span>`;
+                    } else {
+                        tagDireita = `<span class="previa-tag-ciclo atu" title="Valor em aberto no mês atual">Mês atual</span>`;
+                    }
+                }
+
+                const infoRotas = temAberto
+                    ? `<span><span class="badge ${badgeClass}" style="margin-right: 4px;">${abrevFunc}</span><strong>${qtdRotasExibida}</strong> rota(s) • ${qtdDiasExibida}d</span>`
+                    : `<span><span class="badge ${badgeClass}" style="margin-right: 4px;">${abrevFunc}</span>0 pendências</span>`;
 
                 return `
                     <div class="previa-card ${classeEstado} ${classeAtivo}" onclick="window.selecionarFuncionarioNaPreviaRelatorio('${item.id}')">
                         <div class="previa-card-top">
-                            <div class="previa-nome">${item.nome}</div>
-                            <span class="badge ${badgeClass}">${item.funcao}</span>
+                            <div class="previa-nome" title="${item.nome}">${item.nome}</div>
+                            <div class="previa-valor">${formatarMoeda(valorExibido)}</div>
                         </div>
-                        <div class="previa-valor">${formatarMoeda(item.valorRotasAberto)}</div>
-                        <div class="previa-meta">${subtexto}</div>
+                        <div class="previa-meta">
+                            ${infoRotas}
+                            ${tagDireita}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -1774,11 +3277,31 @@
             selectRel.value = idFuncionario;
             await window.aoSelecionarFuncionarioRelatorio(true);
             window.renderizarPreviaFuncionarios();
+            await window.gerarRelatorioTela();
         };
 
         window.atualizarInterfaces = function() {
+            const { fimMesAnteriorISO } = obterLimitesMesAnteriorEAtual();
             const totalAbertoGeral = lancamentosDB.reduce((acc, l) => l.statusPagamento !== 'Sim' ? acc + (Number(l.valorTotal) || 0) : acc, 0);
             document.getElementById('total-geral-aberto').innerText = formatarMoeda(totalAbertoGeral);
+
+            const totalAbertoAteMesAnterior = lancamentosDB.reduce((acc, l) => {
+                if (l.statusPagamento !== 'Sim' && l.data && l.data <= fimMesAnteriorISO) {
+                    return acc + (Number(l.valorTotal) || 0);
+                }
+                return acc;
+            }, 0);
+
+            const elInfoAbertoMesAnt = document.getElementById('info-total-aberto-mes-anterior');
+            if (elInfoAbertoMesAnt) {
+                if (totalAbertoAteMesAnterior > 0) {
+                    elInfoAbertoMesAnt.style.display = 'inline-block';
+                    elInfoAbertoMesAnt.innerHTML = `Até ${formatarData(fimMesAnteriorISO)}: <strong>${formatarMoeda(totalAbertoAteMesAnterior)}</strong>`;
+                } else {
+                    elInfoAbertoMesAnt.style.display = 'none';
+                    elInfoAbertoMesAnt.innerHTML = '';
+                }
+            }
 
             const currLancFunc = document.getElementById('lanc-funcionario').value;
             const currDescFunc = document.getElementById('desc-funcionario').value;
@@ -1885,14 +3408,16 @@
                     </tr>`;
             });
 
-            // Aplica os filtros da Dashboard
-            const fData = document.getElementById('filtro-dash-data').value;
+            // Aplica os filtros da Dashboard (por Período: Data Inicial até Data Final, Funcionário e Status)
+            const fDataIni = document.getElementById('filtro-dash-data')?.value || '';
+            const fDataFim = document.getElementById('filtro-dash-data-fim')?.value || '';
             const fFunc = document.getElementById('filtro-dash-funcionario').value;
             const fStatus = document.getElementById('filtro-dash-status').value;
 
             let lancsFiltered = [...lancamentosDB];
             
-            if (fData) lancsFiltered = lancsFiltered.filter(l => l.data === fData);
+            if (fDataIni) lancsFiltered = lancsFiltered.filter(l => (l.data || '') >= fDataIni);
+            if (fDataFim) lancsFiltered = lancsFiltered.filter(l => (l.data || '') <= fDataFim);
             if (fFunc) lancsFiltered = lancsFiltered.filter(l => l.idFuncionario === fFunc);
             if (fStatus) {
                 if (fStatus === 'Não') {
@@ -1902,9 +3427,10 @@
                 }
             }
 
-            let lancsSorted = lancsFiltered.sort((a,b) => (b.data || '').localeCompare(a.data || ''));
-            if (!fData && !fFunc && !fStatus) {
-                lancsSorted = lancsSorted.slice(0, 50);
+            // Ordena primeiramente pela Data (mais recentes no topo, mais antigas no final) e depois pela Ordem de Criação
+            let lancsSorted = lancsFiltered.sort(compararPorDataDecrescenteECriacao);
+            if (!fDataIni && !fDataFim && !fFunc && !fStatus && lancsSorted.length > 100) {
+                lancsSorted = lancsSorted.slice(0, 100);
             }
 
             lancamentosVisiveisAtuais = lancsSorted;
@@ -1936,8 +3462,9 @@
                 }
                 acoesHtml += `<button type="button" class="btn btn-danger" style="min-height:32px; font-size:12px; padding: 0 10px; display: block; width: 100%;" onclick="window.excluirLancamento('${l.id}')">Excluir</button>`;
 
+                const isRealtimeNew = idsRecemDestacados.has(l.id);
                 tbLanc.innerHTML += `
-                    <tr class="${isSelected ? 'row-selected' : ''}" data-rota-id="${l.id}" title="Dê dois cliques para editar esta rota" ondblclick="window.aoDuploCliqueRota(event, '${l.id}')">
+                    <tr class="${isSelected ? 'row-selected' : ''} ${isRealtimeNew ? 'realtime-new-row' : ''}" data-rota-id="${l.id}" title="Dê dois cliques para editar esta rota" ondblclick="window.aoDuploCliqueRota(event, '${l.id}')">
                         <td class="col-check">
                             <input type="checkbox" class="chk-lanc-item" data-id="${l.id}" ${isSelected ? 'checked' : ''} onchange="window.toggleSelecionarItemLanc('${l.id}', this.checked)">
                         </td>
@@ -1957,6 +3484,9 @@
             window.atualizarMapaDiasAbertosRelatorio();
             window.atualizarTabelaDescontos();
             window.atualizarTabelaDescontosFuturos();
+            if (typeof window.atualizarRankingProducao === 'function') {
+                window.atualizarRankingProducao();
+            }
         };
 
         // --- SELEÇÃO MÚLTIPLA E AÇÕES EM MASSA (PAGAR / DESFAZER) ---
@@ -2402,8 +3932,17 @@
 
                 const idx = lancamentosDB.findIndex(l => l.id === idRotaEdicao);
                 if (idx > -1) {
-                    lancamentosDB[idx] = { ...lancamentosDB[idx], ...dadosAtualizados };
+                    const atualizado = { ...lancamentosDB[idx], ...dadosAtualizados };
+                    lancamentosDB[idx] = atualizado;
+                    if (mapaLancRecentes.has(idRotaEdicao)) mapaLancRecentes.set(idRotaEdicao, atualizado);
+                    if (atualizado.statusPagamento !== 'Sim') {
+                        mapaLancPendentes.set(idRotaEdicao, atualizado);
+                    } else {
+                        mapaLancPendentes.delete(idRotaEdicao);
+                    }
+                    if (mapaLancExtras.has(idRotaEdicao)) mapaLancExtras.set(idRotaEdicao, atualizado);
                 }
+                reconstruirLancamentosDB();
 
                 window.fecharModalEditarRota();
                 window.atualizarInterfaces();
@@ -2447,6 +3986,7 @@
                 const valorTotal = valorUnitario * qtd;
                 const nomeCompleto = `${func.nome} ${func.sobrenome || ''}`.trim();
 
+                const agoraMs = Date.now();
                 const novoRegisto = {
                     data: data,
                     turno: turno,
@@ -2460,11 +4000,21 @@
                     valorTotal: valorTotal,
                     statusPagamento: 'Não', 
                     dataPagamento: null,
-                    criadoEm: new Date().toISOString()
+                    criadoEm: new Date(agoraMs).toISOString(),
+                    ordemCriacao: agoraMs
                 };
 
                 const docRef = await addDoc(collection(db, "producao_lancamentos"), novoRegisto);
-                lancamentosDB.unshift({ id: docRef.id, ...novoRegisto }); 
+                const regComId = { id: docRef.id, ...novoRegisto };
+                mapaLancRecentes.set(docRef.id, regComId);
+                mapaLancPendentes.set(docRef.id, regComId);
+                idsRecemDestacados.add(docRef.id);
+                reconstruirLancamentosDB();
+                try {
+                    if (canalSyncLocal) {
+                        canalSyncLocal.postMessage({ tipo: 'rota_incluida', registro: regComId });
+                    }
+                } catch (eSync) {} 
                 
                 document.getElementById('lanc-qtd').value = 1;
                 document.getElementById('lanc-valor').value = '';
@@ -2619,9 +4169,13 @@
                     if (idx > -1) {
                         lancamentosDB[idx].statusPagamento = 'Sim';
                         lancamentosDB[idx].dataPagamento = dataPagou;
+                        if (mapaLancRecentes.has(id)) mapaLancRecentes.set(id, { ...lancamentosDB[idx] });
+                        if (mapaLancExtras.has(id)) mapaLancExtras.set(id, { ...lancamentosDB[idx] });
                     }
+                    mapaLancPendentes.delete(id);
                     selecionadosLanc.delete(id);
                 });
+                reconstruirLancamentosDB();
 
                 // Sincroniza também o recibo aberto na aba Relatórios & Pagamentos, se houver
                 if (dadosRelatorioAtual && Array.isArray(dadosRelatorioAtual.lancamentos)) {
@@ -2671,7 +4225,11 @@
                         if (idx > -1) {
                             lancamentosDB[idx].statusPagamento = 'Não';
                             lancamentosDB[idx].dataPagamento = null;
+                            mapaLancPendentes.set(idLancamento, { ...lancamentosDB[idx] });
+                            if (mapaLancRecentes.has(idLancamento)) mapaLancRecentes.set(idLancamento, { ...lancamentosDB[idx] });
+                            if (mapaLancExtras.has(idLancamento)) mapaLancExtras.set(idLancamento, { ...lancamentosDB[idx] });
                         }
+                        reconstruirLancamentosDB();
                         selecionadosLanc.delete(idLancamento);
                         if (dadosRelatorioAtual && Array.isArray(dadosRelatorioAtual.lancamentos)) {
                             dadosRelatorioAtual.lancamentos.forEach(item => {
@@ -2725,9 +4283,13 @@
                             if (idx > -1) {
                                 lancamentosDB[idx].statusPagamento = 'Não';
                                 lancamentosDB[idx].dataPagamento = null;
+                                mapaLancPendentes.set(id, { ...lancamentosDB[idx] });
+                                if (mapaLancRecentes.has(id)) mapaLancRecentes.set(id, { ...lancamentosDB[idx] });
+                                if (mapaLancExtras.has(id)) mapaLancExtras.set(id, { ...lancamentosDB[idx] });
                             }
                             selecionadosLanc.delete(id);
                         });
+                        reconstruirLancamentosDB();
 
                         if (dadosRelatorioAtual && Array.isArray(dadosRelatorioAtual.lancamentos)) {
                             const setDesfazer = new Set(idsDesfazer);
@@ -2761,7 +4323,10 @@
                     try {
                         document.getElementById('loading-global').style.display = 'flex';
                         await deleteDoc(doc(db, "producao_lancamentos", id));
-                        lancamentosDB = lancamentosDB.filter(l => l.id !== id);
+                        mapaLancRecentes.delete(id);
+                        mapaLancPendentes.delete(id);
+                        mapaLancExtras.delete(id);
+                        reconstruirLancamentosDB();
                         selecionadosLanc.delete(id);
                         window.atualizarInterfaces();
                         window.mostrarNotificacao("Lançamento excluído com sucesso.", "success");
@@ -2782,24 +4347,128 @@
             return `${d}/${m}/${a}`;
         };
 
+        // --- FILTRO INTELIGENTE: EM ABERTO ATÉ FINAL DO MÊS ANTERIOR SE HOUVER, SENÃO ATÉ FINAL DO MÊS ATUAL ---
+        window.calcularPeriodoAbertoMesAnteriorOuAtual = function(idFuncOpcional) {
+            const idFunc = idFuncOpcional !== undefined ? idFuncOpcional : (document.getElementById('filtro-funcionario')?.value || '');
+            const {
+                inicioMesAnteriorISO,
+                fimMesAnteriorISO,
+                inicioMesAtualISO,
+                fimMesAtualISO,
+                nomeMesAnterior,
+                nomeMesAtual
+            } = obterLimitesMesAnteriorEAtual();
+
+            const abertos = lancamentosDB.filter(l => {
+                if (l.statusPagamento === 'Sim' || !l.data) return false;
+                if (idFunc && l.idFuncionario !== idFunc) return false;
+                return true;
+            });
+
+            const datasAbertas = Array.from(new Set(abertos.map(l => l.data))).sort();
+            const datasAteMesAnterior = datasAbertas.filter(d => d <= fimMesAnteriorISO);
+            const datasAteMesAtual = datasAbertas.filter(d => d <= fimMesAtualISO);
+
+            if (datasAteMesAnterior.length > 0) {
+                return {
+                    modo: 'mes_anterior',
+                    dataInicio: datasAteMesAnterior[0],
+                    dataFim: fimMesAnteriorISO,
+                    qtdDiasAbertos: datasAteMesAnterior.length,
+                    nomePeriodo: nomeMesAnterior,
+                    mensagem: `Encontradas rotas em aberto até o final do mês anterior (${formatarData(fimMesAnteriorISO)}). Período preenchido de ${formatarData(datasAteMesAnterior[0])} a ${formatarData(fimMesAnteriorISO)}.`
+                };
+            } else {
+                const ini = datasAteMesAtual.length > 0
+                    ? datasAteMesAtual[0]
+                    : (datasAbertas.length > 0 ? datasAbertas[0] : inicioMesAtualISO);
+                return {
+                    modo: 'mes_atual',
+                    dataInicio: ini,
+                    dataFim: fimMesAtualISO,
+                    qtdDiasAbertos: datasAteMesAtual.length,
+                    nomePeriodo: nomeMesAtual,
+                    mensagem: `Sem valores em aberto no mês anterior — selecionado até o final do mês atual (${formatarData(fimMesAtualISO)}).`
+                };
+            }
+        };
+
+        window.aplicarFiltroAbertoMesAnteriorOuAtual = async function(executarBusca = false) {
+            const selRegra = document.getElementById('filtro-relatorio-regra-periodo');
+            if (selRegra) selRegra.value = 'mes_ant_ou_atual';
+
+            const selStatus = document.getElementById('filtro-relatorio-status');
+            if (selStatus) selStatus.value = 'Não';
+
+            const idFunc = document.getElementById('filtro-funcionario')?.value || '';
+            const calc = window.calcularPeriodoAbertoMesAnteriorOuAtual(idFunc);
+
+            window.definirDataCalendario('inicio', calc.dataInicio, false, false);
+            window.definirDataCalendario('fim', calc.dataFim, false, false);
+
+            const [anoIni, mesIni] = calc.dataInicio.split('-').map(Number);
+            const [anoFim, mesFim] = calc.dataFim.split('-').map(Number);
+            calMesAno.inicio = { ano: anoIni, mes: mesIni - 1 };
+            calMesAno.fim = { ano: anoFim, mes: mesFim - 1 };
+
+            window.fecharCalendariosCustom();
+            window.mostrarNotificacao(calc.mensagem, "info");
+
+            if (executarBusca && idFunc) {
+                await window.gerarRelatorioTela();
+            }
+        };
+
+        window.aoMudarRegraPeriodoRelatorio = async function() {
+            const regra = document.getElementById('filtro-relatorio-regra-periodo')?.value || 'mes_ant_ou_atual';
+            const idFunc = document.getElementById('filtro-funcionario')?.value || '';
+            const {
+                inicioMesAnteriorISO,
+                fimMesAnteriorISO,
+                inicioMesAtualISO,
+                fimMesAtualISO
+            } = obterLimitesMesAnteriorEAtual();
+
+            if (regra === 'mes_ant_ou_atual') {
+                await window.aplicarFiltroAbertoMesAnteriorOuAtual(Boolean(idFunc));
+            } else if (regra === 'todo_aberto') {
+                window.preencherPeriodoEmAberto();
+                if (idFunc) await window.gerarRelatorioTela();
+            } else if (regra === 'somente_mes_anterior') {
+                const datasAbertasAnt = Object.keys(mapaDiasAbertosFunc).filter(d => d <= fimMesAnteriorISO).sort();
+                const ini = datasAbertasAnt.length > 0 ? datasAbertasAnt[0] : inicioMesAnteriorISO;
+                window.definirDataCalendario('inicio', ini, false, false);
+                window.definirDataCalendario('fim', fimMesAnteriorISO, false, false);
+                document.getElementById('filtro-relatorio-status').value = 'Não';
+                if (idFunc) await window.gerarRelatorioTela();
+            } else if (regra === 'somente_mes_atual') {
+                window.definirDataCalendario('inicio', inicioMesAtualISO, false, false);
+                window.definirDataCalendario('fim', fimMesAtualISO, false, false);
+                document.getElementById('filtro-relatorio-status').value = 'Não';
+                if (idFunc) await window.gerarRelatorioTela();
+            }
+        };
+
         // --- CALENDÁRIO CUSTOMIZADO COM DIAS EM ABERTO E DESCONTOS PINTADOS ---
         window.aoSelecionarFuncionarioRelatorio = async function(preencherDatasAutomatico = false) {
             const idFunc = document.getElementById('filtro-funcionario').value;
             window.renderizarPreviaFuncionarios();
 
             if (idFunc) {
-                // Busca na nuvem todos os lançamentos e descontos do funcionário selecionado para garantir 100% de precisão nos dias pintados
                 try {
                     const [snapLanc, snapDesc] = await Promise.all([
                         getDocs(query(collection(db, "producao_lancamentos"), where("idFuncionario", "==", idFunc))),
                         getDocs(query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc)))
                     ]);
 
-                    const mapaLocalLanc = new Map(lancamentosDB.map(l => [l.id, l]));
                     snapLanc.forEach(d => {
-                        mapaLocalLanc.set(d.id, { id: d.id, ...d.data() });
+                        const dados = { id: d.id, ...d.data() };
+                        mapaLancExtras.set(d.id, dados);
+                        if (dados.statusPagamento !== 'Sim') {
+                            mapaLancPendentes.set(d.id, dados);
+                        }
                     });
-                    lancamentosDB = Array.from(mapaLocalLanc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+                    reconstruirLancamentosDB();
 
                     const mapaLocalDesc = new Map(descontosDB.map(d => [d.id, d]));
                     snapDesc.forEach(d => {
@@ -2813,22 +4482,48 @@
 
             window.atualizarMapaDiasAbertosRelatorio();
 
+            const regraAtual = document.getElementById('filtro-relatorio-regra-periodo')?.value || 'mes_ant_ou_atual';
             const datasAbertas = Object.keys(mapaDiasAbertosFunc).sort();
             const datasDescontos = Object.keys(mapaDiasDescontosFunc).sort();
             const datasRef = datasAbertas.length > 0 ? datasAbertas : datasDescontos;
 
-            if (datasRef.length > 0) {
+            if (idFunc && (preencherDatasAutomatico || regraAtual !== 'personalizado')) {
+                if (regraAtual === 'todo_aberto' && datasAbertas.length > 0) {
+                    window.definirDataCalendario('inicio', datasAbertas[0], false, false);
+                    window.definirDataCalendario('fim', datasAbertas[datasAbertas.length - 1], false, false);
+                } else if (regraAtual === 'somente_mes_anterior') {
+                    const { inicioMesAnteriorISO, fimMesAnteriorISO } = obterLimitesMesAnteriorEAtual();
+                    const datasAnt = datasAbertas.filter(d => d <= fimMesAnteriorISO);
+                    window.definirDataCalendario('inicio', datasAnt.length > 0 ? datasAnt[0] : inicioMesAnteriorISO, false, false);
+                    window.definirDataCalendario('fim', fimMesAnteriorISO, false, false);
+                } else if (regraAtual === 'somente_mes_atual') {
+                    const { inicioMesAtualISO, fimMesAtualISO } = obterLimitesMesAnteriorEAtual();
+                    window.definirDataCalendario('inicio', inicioMesAtualISO, false, false);
+                    window.definirDataCalendario('fim', fimMesAtualISO, false, false);
+                } else {
+                    // Padrão: Pega tudo em aberto até o final do mês anterior se houver; se não houver, até o final do mês atual
+                    const calc = window.calcularPeriodoAbertoMesAnteriorOuAtual(idFunc);
+                    window.definirDataCalendario('inicio', calc.dataInicio, false, false);
+                    window.definirDataCalendario('fim', calc.dataFim, false, false);
+                }
+            } else if (datasRef.length > 0) {
                 const primeiraData = datasRef[0];
                 const ultimaData = datasRef[datasRef.length - 1];
                 const [anoIni, mesIni] = primeiraData.split('-').map(Number);
                 const [anoFim, mesFim] = ultimaData.split('-').map(Number);
                 calMesAno.inicio = { ano: anoIni, mes: mesIni - 1 };
                 calMesAno.fim = { ano: anoFim, mes: mesFim - 1 };
+            }
 
-                if (preencherDatasAutomatico && datasAbertas.length > 0) {
-                    window.definirDataCalendario('inicio', datasAbertas[0], false);
-                    window.definirDataCalendario('fim', datasAbertas[datasAbertas.length - 1], false);
-                }
+            const valIni = document.getElementById('filtro-data-inicio')?.value;
+            const valFim = document.getElementById('filtro-data-fim')?.value;
+            if (valIni) {
+                const [aI, mI] = valIni.split('-').map(Number);
+                calMesAno.inicio = { ano: aI, mes: mI - 1 };
+            }
+            if (valFim) {
+                const [aF, mF] = valFim.split('-').map(Number);
+                calMesAno.fim = { ano: aF, mes: mF - 1 };
             }
 
             if (calendarioAtivo) {
@@ -2907,10 +4602,12 @@
             const datasDescontos = Object.keys(mapaDiasDescontosFunc).sort();
             const todasDatas = Array.from(new Set([...datasAbertas, ...datasDescontos])).sort();
             if (todasDatas.length === 0) return;
+            const selRegra = document.getElementById('filtro-relatorio-regra-periodo');
+            if (selRegra) selRegra.value = 'todo_aberto';
             const ini = datasAbertas.length > 0 ? datasAbertas[0] : todasDatas[0];
             const fim = datasAbertas.length > 0 ? datasAbertas[datasAbertas.length - 1] : todasDatas[todasDatas.length - 1];
-            window.definirDataCalendario('inicio', ini, false);
-            window.definirDataCalendario('fim', fim, false);
+            window.definirDataCalendario('inicio', ini, false, false);
+            window.definirDataCalendario('fim', fim, false, false);
             window.fecharCalendariosCustom();
             window.mostrarNotificacao("Período preenchido com o 1º e o último dia em aberto!", "info");
         };
@@ -3003,7 +4700,7 @@
             window.rolarParaCalendarioVisivel(pop);
         };
 
-        window.definirDataCalendario = function(tipo, dataISO, fechar = true) {
+        window.definirDataCalendario = function(tipo, dataISO, fechar = true, marcarPersonalizado = true) {
             const inputHidden = document.getElementById(`filtro-data-${tipo}`);
             const labelEl = document.getElementById(`label-data-${tipo}`);
             if (inputHidden) inputHidden.value = dataISO;
@@ -3012,9 +4709,13 @@
                     labelEl.innerText = formatarData(dataISO);
                     labelEl.classList.remove('placeholder');
                 } else {
-                    labelEl.innerText = tipo === 'inicio' ? 'Selecione a data inicial...' : 'Selecione a data final...';
+                    labelEl.innerText = tipo === 'inicio' ? 'Início...' : 'Fim...';
                     labelEl.classList.add('placeholder');
                 }
+            }
+            if (marcarPersonalizado && dataISO) {
+                const selRegra = document.getElementById('filtro-relatorio-regra-periodo');
+                if (selRegra) selRegra.value = 'personalizado';
             }
             if (fechar) {
                 window.fecharCalendariosCustom();
@@ -3106,6 +4807,9 @@
                         <span class="cal-swatch sel"></span>
                         <span><strong>Dia selecionado:</strong> ${tipo === 'inicio' ? 'Data Inicial' : 'Data Final'}</span>
                     </div>
+                    <button type="button" class="cal-quick-btn" style="border-color: var(--brand); background: var(--brand-pale); color: var(--brand-dark);" onclick="window.aplicarFiltroAbertoMesAnteriorOuAtual(true)">
+                        📅 Em Aberto: Até Mês Anterior (ou Atual se não houver)
+                    </button>
                     ${temAbertos ? `
                         <button type="button" class="cal-quick-btn" onclick="window.preencherPeriodoEmAberto()">
                             ⚡ Usar 1º ao último dia em aberto (${formatarData(datasAbertas[0])} a ${formatarData(datasAbertas[datasAbertas.length - 1])})
@@ -3126,8 +4830,10 @@
         window.limparFiltrosRelatorio = function() {
             const selFunc = document.getElementById('filtro-funcionario');
             if (selFunc) selFunc.value = '';
-            window.definirDataCalendario('inicio', '', false);
-            window.definirDataCalendario('fim', '', false);
+            const selRegra = document.getElementById('filtro-relatorio-regra-periodo');
+            if (selRegra) selRegra.value = 'mes_ant_ou_atual';
+            window.definirDataCalendario('inicio', '', false, false);
+            window.definirDataCalendario('fim', '', false, false);
             const selStatus = document.getElementById('filtro-relatorio-status');
             if (selStatus) selStatus.value = 'Não';
             window.fecharCalendariosCustom();
@@ -3250,7 +4956,10 @@
 
                 snapLanc.forEach(d => {
                     const dadosDoc = { id: d.id, ...d.data() };
-                    mapaLocalLanc.set(d.id, dadosDoc);
+                    mapaLancExtras.set(d.id, dadosDoc);
+                    if (dadosDoc.statusPagamento !== 'Sim') {
+                        mapaLancPendentes.set(d.id, dadosDoc);
+                    }
                     const l = { ...dadosDoc, tipo: 'rota' };
                     if (l.data >= dataIn && l.data <= dataFim) {
                         const isPago = l.statusPagamento === 'Sim';
@@ -3263,7 +4972,7 @@
                         }
                     }
                 });
-                lancamentosDB = Array.from(mapaLocalLanc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+                reconstruirLancamentosDB();
 
                 // 2. Busca Descontos do Funcionário no período
                 const qDesc = query(collection(db, "producao_descontos"), where("idFuncionario", "==", idFunc));
@@ -3278,8 +4987,8 @@
                 });
                 descontosDB = Array.from(mapaLocalDesc.values()).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
-                // Ordena tudo por data
-                filtrados.sort((a,b) => a.data.localeCompare(b.data));
+                // Ordena primeiramente por data e depois por ordem de criação
+                filtrados.sort(compararPorDataECriacao);
 
                 const labelStatus = statusFiltro === 'Não' ? 'Em Aberto' : (statusFiltro === 'Sim' ? 'Pago' : 'Tudo');
 
@@ -3308,6 +5017,828 @@
             } finally {
                 document.getElementById('loading-global').style.display = 'none';
             }
+        };
+
+        // --- LÓGICA COMPLETA DA ABA RANKING DE PRODUÇÃO E METAS MENSAIS (MOTORISTA & AJUDANTE) ---
+        let rankingMesSelecionado = ''; // Formato 'YYYY-MM' (vazio = mês atual automático)
+        let rankingCategoriaFiltro = 'Todos'; // 'Todos' | 'Motorista' | 'Ajudante'
+        let mesesJaConsultadosNuvem = new Set();
+        let animacaoConfeteId = null;
+
+        let metasRankingConfig = {
+            metaPrincipalMotorista: 30,
+            metaPrincipalAjudante: 25,
+            escaloesMotorista: [
+                { nome: '1ª Meta (Bronze)', qtd: 15 },
+                { nome: '2ª Meta (Prata)', qtd: 25 },
+                { nome: 'Super Meta (Ouro)', qtd: 35 }
+            ],
+            escaloesAjudante: [
+                { nome: '1ª Meta (Bronze)', qtd: 12 },
+                { nome: '2ª Meta (Prata)', qtd: 20 },
+                { nome: 'Super Meta (Ouro)', qtd: 30 }
+            ]
+        };
+
+        // Carrega cache local se existir
+        try {
+            const cacheMetas = localStorage.getItem('lv_producao_metas_ranking');
+            if (cacheMetas) {
+                const parsed = JSON.parse(cacheMetas);
+                if (parsed && typeof parsed === 'object') {
+                    metasRankingConfig = { ...metasRankingConfig, ...parsed };
+                }
+            }
+        } catch (eLocal) {}
+
+        let escaloesTempModal = {
+            Motorista: [],
+            Ajudante: []
+        };
+
+        window.aplicarMetasRecebidas = function(dados) {
+            if (!dados) return;
+            metasRankingConfig = {
+                metaPrincipalMotorista: Number(dados.metaPrincipalMotorista) || 30,
+                metaPrincipalAjudante: Number(dados.metaPrincipalAjudante) || 25,
+                escaloesMotorista: Array.isArray(dados.escaloesMotorista) ? dados.escaloesMotorista : metasRankingConfig.escaloesMotorista,
+                escaloesAjudante: Array.isArray(dados.escaloesAjudante) ? dados.escaloesAjudante : metasRankingConfig.escaloesAjudante
+            };
+            try {
+                localStorage.setItem('lv_producao_metas_ranking', JSON.stringify(metasRankingConfig));
+            } catch (e) {}
+            if (typeof window.atualizarRankingProducao === 'function') {
+                window.atualizarRankingProducao();
+            }
+        };
+
+        window.obterMetaPrincipalPorFuncao = function(funcao) {
+            return funcao === 'Ajudante'
+                ? (Number(metasRankingConfig.metaPrincipalAjudante) || 25)
+                : (Number(metasRankingConfig.metaPrincipalMotorista) || 30);
+        };
+
+        window.obterEscaloesPorFuncao = function(funcao) {
+            const arr = funcao === 'Ajudante'
+                ? (metasRankingConfig.escaloesAjudante || [])
+                : (metasRankingConfig.escaloesMotorista || []);
+            return [...arr].filter(x => Number(x.qtd) > 0).sort((a, b) => Number(a.qtd) - Number(b.qtd));
+        };
+
+        window.avaliarStatusMetaFuncionario = function(totalRotas, funcao) {
+            const metaPrincipal = window.obterMetaPrincipalPorFuncao(funcao);
+            const escaloes = window.obterEscaloesPorFuncao(funcao);
+            const bateuPrincipal = totalRotas >= metaPrincipal && metaPrincipal > 0;
+            const pctMeta = metaPrincipal > 0 ? Math.min(100, Math.round((totalRotas / metaPrincipal) * 100)) : 0;
+            const faltamPrincipal = Math.max(0, metaPrincipal - totalRotas);
+
+            let ultimoEscalaoBatido = null;
+            let proximoEscalao = null;
+            escaloes.forEach(esc => {
+                if (totalRotas >= Number(esc.qtd)) {
+                    ultimoEscalaoBatido = esc;
+                } else if (!proximoEscalao) {
+                    proximoEscalao = esc;
+                }
+            });
+
+            return {
+                metaPrincipal,
+                bateuPrincipal,
+                pctMeta,
+                faltamPrincipal,
+                ultimoEscalaoBatido,
+                proximoEscalao
+            };
+        };
+
+        window.abrirModalConfigMetas = function() {
+            document.getElementById('meta-principal-motorista').value = metasRankingConfig.metaPrincipalMotorista || 30;
+            document.getElementById('meta-principal-ajudante').value = metasRankingConfig.metaPrincipalAjudante || 25;
+            escaloesTempModal.Motorista = (metasRankingConfig.escaloesMotorista || []).map(x => ({ ...x }));
+            escaloesTempModal.Ajudante = (metasRankingConfig.escaloesAjudante || []).map(x => ({ ...x }));
+            window.renderizarEscaloesModal();
+            window.atualizarResumoPreviewMetasModal();
+            document.getElementById('modal-config-metas').style.display = 'flex';
+        };
+
+        window.fecharModalConfigMetas = function() {
+            document.getElementById('modal-config-metas').style.display = 'none';
+        };
+
+        window.renderizarEscaloesModal = function() {
+            ['Motorista', 'Ajudante'].forEach(func => {
+                const containerId = func === 'Motorista' ? 'lista-escaloes-motorista' : 'lista-escaloes-ajudante';
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const lista = escaloesTempModal[func] || [];
+                if (lista.length === 0) {
+                    container.innerHTML = `<div style="font-size: 11.5px; color: var(--muted); padding: 6px 2px;">Nenhum nível extra configurado (usando apenas a Meta Mensal Principal).</div>`;
+                    return;
+                }
+                container.innerHTML = lista.map((item, idx) => `
+                    <div class="meta-tier-row">
+                        <input type="text" value="${item.nome || ''}" placeholder="Nome (ex: 1ª Meta)" oninput="window.atualizarItemEscalaoModal('${func}', ${idx}, 'nome', this.value)">
+                        <input type="number" min="1" value="${item.qtd || ''}" placeholder="Qtd. Rotas" oninput="window.atualizarItemEscalaoModal('${func}', ${idx}, 'qtd', this.value)">
+                        <button type="button" class="meta-btn-remove" title="Remover este nível" onclick="window.removerEscalaoMeta('${func}', ${idx})">✕</button>
+                    </div>
+                `).join('');
+            });
+        };
+
+        window.atualizarItemEscalaoModal = function(func, idx, campo, valor) {
+            if (!escaloesTempModal[func] || !escaloesTempModal[func][idx]) return;
+            if (campo === 'qtd') {
+                escaloesTempModal[func][idx].qtd = parseInt(valor, 10) || 0;
+            } else {
+                escaloesTempModal[func][idx].nome = valor;
+            }
+            window.atualizarResumoPreviewMetasModal();
+        };
+
+        window.adicionarEscalaoMeta = function(func) {
+            const qtdAtual = (escaloesTempModal[func] || []).length + 1;
+            const sugestaoQtd = func === 'Motorista' ? qtdAtual * 12 : qtdAtual * 10;
+            escaloesTempModal[func].push({
+                nome: `${qtdAtual}ª Meta`,
+                qtd: sugestaoQtd
+            });
+            window.renderizarEscaloesModal();
+            window.atualizarResumoPreviewMetasModal();
+        };
+
+        window.removerEscalaoMeta = function(func, idx) {
+            if (!escaloesTempModal[func]) return;
+            escaloesTempModal[func].splice(idx, 1);
+            window.renderizarEscaloesModal();
+            window.atualizarResumoPreviewMetasModal();
+        };
+
+        window.atualizarResumoPreviewMetasModal = function() {
+            const box = document.getElementById('resumo-preview-metas-modal');
+            if (!box) return;
+            const metaMot = parseInt(document.getElementById('meta-principal-motorista')?.value, 10) || 0;
+            const metaAju = parseInt(document.getElementById('meta-principal-ajudante')?.value, 10) || 0;
+            const mesSel = window.obterMesSelecionadoRanking();
+            const { lista } = window.calcularDadosRankingDoMes(mesSel, 'Todos');
+
+            const motBatidos = lista.filter(p => p.funcao === 'Motorista' && metaMot > 0 && p.totalRotas >= metaMot).length;
+            const ajuBatidos = lista.filter(p => p.funcao === 'Ajudante' && metaAju > 0 && p.totalRotas >= metaAju).length;
+
+            box.innerHTML = `
+                <span>📊 <strong>Simulação em ${window.formatarMesAnoExtenso(mesSel)}:</strong></span>
+                <span>🚗 Motoristas c/ meta batida (≥ ${metaMot} rotas): <strong>${motBatidos}</strong> &nbsp;|&nbsp; 📦 Ajudantes c/ meta batida (≥ ${metaAju} rotas): <strong>${ajuBatidos}</strong></span>
+            `;
+        };
+
+        window.salvarConfigMetasRanking = async function(e) {
+            if (e) e.preventDefault();
+            const metaMot = parseInt(document.getElementById('meta-principal-motorista').value, 10);
+            const metaAju = parseInt(document.getElementById('meta-principal-ajudante').value, 10);
+
+            if (!metaMot || metaMot < 1 || !metaAju || metaAju < 1) {
+                window.mostrarNotificacao("Informe valores maiores que zero para as metas de Motorista e Ajudante.", "warning");
+                return;
+            }
+
+            const btn = document.getElementById('btn-salvar-metas-ranking');
+            if (btn) { btn.disabled = true; btn.innerText = "A salvar..."; }
+
+            const novaConfig = {
+                metaPrincipalMotorista: metaMot,
+                metaPrincipalAjudante: metaAju,
+                escaloesMotorista: (escaloesTempModal.Motorista || [])
+                    .filter(x => x.nome && Number(x.qtd) > 0)
+                    .map(x => ({ nome: x.nome.trim(), qtd: Number(x.qtd) }))
+                    .sort((a, b) => a.qtd - b.qtd),
+                escaloesAjudante: (escaloesTempModal.Ajudante || [])
+                    .filter(x => x.nome && Number(x.qtd) > 0)
+                    .map(x => ({ nome: x.nome.trim(), qtd: Number(x.qtd) }))
+                    .sort((a, b) => a.qtd - b.qtd),
+                atualizadoEm: new Date().toISOString()
+            };
+
+            metasRankingConfig = novaConfig;
+            try {
+                localStorage.setItem('lv_producao_metas_ranking', JSON.stringify(novaConfig));
+            } catch (e) {}
+
+            try {
+                await setDoc(doc(db, "producao_config", "metas_ranking"), novaConfig);
+            } catch (errCloud) {
+                console.warn("Aviso ao salvar metas na nuvem (salvo localmente):", errCloud);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerText = "💾 Salvar Metas Mensais"; }
+            }
+
+            window.fecharModalConfigMetas();
+            window.atualizarRankingProducao();
+            window.mostrarNotificacao("Metas mensais de Motorista e Ajudante atualizadas com sucesso!", "success");
+        };
+
+        window.obterMesAtualISO = function() {
+            return formatarDataLocalISO(new Date()).substring(0, 7);
+        };
+
+        window.obterMesSelecionadoRanking = function() {
+            const mesAtual = window.obterMesAtualISO();
+            if (!rankingMesSelecionado) {
+                rankingMesSelecionado = mesAtual;
+            }
+            return rankingMesSelecionado;
+        };
+
+        window.formatarMesAnoExtenso = function(anoMesStr) {
+            if (!anoMesStr || !anoMesStr.includes('-')) return '-';
+            const [ano, mes] = anoMesStr.split('-').map(Number);
+            return `${NOMES_MESES[(mes || 1) - 1]} de ${ano}`;
+        };
+
+        window.obterIniciaisNome = function(nome) {
+            if (!nome) return 'LV';
+            const partes = nome.trim().split(/\s+/);
+            if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+            return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+        };
+
+        window.garantirDadosMesRanking = async function(anoMes) {
+            if (!anoMes || mesesJaConsultadosNuvem.has(anoMes)) return;
+            mesesJaConsultadosNuvem.add(anoMes);
+            try {
+                const ini = `${anoMes}-01`;
+                const fim = `${anoMes}-31`;
+                const qMes = query(collection(db, "producao_lancamentos"), where("data", ">=", ini), where("data", "<=", fim));
+                const snap = await getDocs(qMes);
+                let adicionou = false;
+                snap.forEach(d => {
+                    const dados = { id: d.id, ...d.data() };
+                    if (!mapaLancExtras.has(d.id) && !mapaLancRecentes.has(d.id)) {
+                        adicionou = true;
+                    }
+                    mapaLancExtras.set(d.id, dados);
+                });
+                if (adicionou) {
+                    reconstruirLancamentosDB();
+                    window.atualizarRankingProducao();
+                }
+            } catch (e) {
+                console.warn("Aviso ao consultar mês do ranking na nuvem:", e);
+            }
+        };
+
+        window.setCategoriaRanking = function(cat) {
+            rankingCategoriaFiltro = cat;
+            const mapaPills = {
+                'Todos': 'pill-rk-todos',
+                'Motorista': 'pill-rk-mot',
+                'Ajudante': 'pill-rk-aju'
+            };
+            Object.entries(mapaPills).forEach(([k, id]) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('active', k === cat);
+            });
+            window.atualizarRankingProducao();
+        };
+
+        window.aoMudarMesRanking = async function(novoMes) {
+            if (!novoMes) return;
+            rankingMesSelecionado = novoMes;
+            await window.garantirDadosMesRanking(novoMes);
+            window.atualizarRankingProducao();
+        };
+
+        window.irParaMesAtualRanking = async function() {
+            rankingMesSelecionado = window.obterMesAtualISO();
+            await window.garantirDadosMesRanking(rankingMesSelecionado);
+            window.atualizarRankingProducao();
+            window.dispararConfetesRanking(35);
+        };
+
+        window.navegarMesRanking = async function(delta) {
+            const atual = window.obterMesSelecionadoRanking();
+            let [ano, mes] = atual.split('-').map(Number);
+            mes += delta;
+            if (mes < 1) { mes = 12; ano -= 1; }
+            if (mes > 12) { mes = 1; ano += 1; }
+            const novoMesStr = `${ano}-${String(mes).padStart(2, '0')}`;
+            rankingMesSelecionado = novoMesStr;
+            await window.garantirDadosMesRanking(novoMesStr);
+            window.atualizarRankingProducao();
+        };
+
+        window.calcularDadosRankingDoMes = function(anoMes, filtroFuncao = 'Todos') {
+            const mapaParticipantes = new Map();
+
+            // Inicializa os funcionários aptos da equipe para que todos apareçam no ranking do mês
+            funcionariosDB.forEach(f => {
+                if (f.funcao !== 'Motorista' && f.funcao !== 'Ajudante') return;
+                if (filtroFuncao !== 'Todos' && f.funcao !== filtroFuncao) return;
+                const nomeCompleto = `${f.nome} ${f.sobrenome || ''}`.trim();
+                mapaParticipantes.set(f.id, {
+                    id: f.id,
+                    nome: nomeCompleto,
+                    funcao: f.funcao,
+                    totalRotas: 0,
+                    totalLancamentos: 0,
+                    diasAtivosSet: new Set(),
+                    rotasPorDiaMap: {},
+                    turnosCount: { 'Manhã': 0, 'Tarde': 0, 'Noite': 0 },
+                    veiculosCount: {},
+                    lancamentosMes: []
+                });
+            });
+
+            let totalRotasMes = 0;
+            let totalLancamentosMes = 0;
+            let recordeDiaQtd = 0;
+            let recordeDiaNome = '-';
+            let recordeDiaData = '';
+
+            lancamentosDB.forEach(l => {
+                if (!l.data || !l.data.startsWith(anoMes)) return;
+                const funcLanc = l.funcaoFuncionario || 'Motorista';
+                if (filtroFuncao !== 'Todos' && funcLanc !== filtroFuncao) return;
+
+                if (!mapaParticipantes.has(l.idFuncionario)) {
+                    mapaParticipantes.set(l.idFuncionario, {
+                        id: l.idFuncionario,
+                        nome: l.nomeFuncionario || 'Funcionário',
+                        funcao: funcLanc,
+                        totalRotas: 0,
+                        totalLancamentos: 0,
+                        diasAtivosSet: new Set(),
+                        rotasPorDiaMap: {},
+                        turnosCount: { 'Manhã': 0, 'Tarde': 0, 'Noite': 0 },
+                        veiculosCount: {},
+                        lancamentosMes: []
+                    });
+                }
+
+                const p = mapaParticipantes.get(l.idFuncionario);
+                const qtd = Number(l.qtd) || 0;
+                p.totalRotas += qtd;
+                p.totalLancamentos += 1;
+                p.diasAtivosSet.add(l.data);
+                p.rotasPorDiaMap[l.data] = (p.rotasPorDiaMap[l.data] || 0) + qtd;
+                if (l.turno) {
+                    p.turnosCount[l.turno] = (p.turnosCount[l.turno] || 0) + qtd;
+                }
+                if (l.veiculoNome) {
+                    p.veiculosCount[l.veiculoNome] = (p.veiculosCount[l.veiculoNome] || 0) + qtd;
+                }
+                p.lancamentosMes.push(l);
+
+                if (p.rotasPorDiaMap[l.data] > recordeDiaQtd) {
+                    recordeDiaQtd = p.rotasPorDiaMap[l.data];
+                    recordeDiaNome = p.nome;
+                    recordeDiaData = l.data;
+                }
+
+                totalRotasMes += qtd;
+                totalLancamentosMes += 1;
+            });
+
+            const lista = Array.from(mapaParticipantes.values()).map(p => {
+                const diasAtivos = p.diasAtivosSet.size;
+                const mediaDia = diasAtivos > 0 ? (p.totalRotas / diasAtivos) : 0;
+
+                // Descobre turno dominante
+                let turnoPrincipal = '-';
+                let maxTurno = 0;
+                Object.entries(p.turnosCount).forEach(([t, c]) => {
+                    if (c > maxTurno) { maxTurno = c; turnoPrincipal = t; }
+                });
+
+                // Descobre veículo mais utilizado
+                let veiculoPrincipal = '-';
+                let maxVeic = 0;
+                Object.entries(p.veiculosCount).forEach(([v, c]) => {
+                    if (c > maxVeic) { maxVeic = c; veiculoPrincipal = v; }
+                });
+
+                let maiorDiaIndividual = 0;
+                Object.values(p.rotasPorDiaMap).forEach(v => {
+                    if (v > maiorDiaIndividual) maiorDiaIndividual = v;
+                });
+
+                return {
+                    ...p,
+                    diasAtivos,
+                    mediaDia,
+                    turnoPrincipal,
+                    veiculoPrincipal,
+                    maiorDiaIndividual
+                };
+            });
+
+            // Ordena por: 1º Total de Rotas (desc), 2º Dias Ativos (desc), 3º Média/Dia (desc), 4º Nome (asc)
+            lista.sort((a, b) => {
+                if (b.totalRotas !== a.totalRotas) return b.totalRotas - a.totalRotas;
+                if (b.diasAtivos !== a.diasAtivos) return b.diasAtivos - a.diasAtivos;
+                if (b.mediaDia !== a.mediaDia) return b.mediaDia - a.mediaDia;
+                return a.nome.localeCompare(b.nome);
+            });
+
+            return {
+                lista,
+                totalRotasMes,
+                totalLancamentosMes,
+                recordeDiaQtd,
+                recordeDiaNome,
+                recordeDiaData
+            };
+        };
+
+        window.atualizarRankingProducao = function() {
+            const selectMes = document.getElementById('ranking-select-mes');
+            if (!selectMes) return;
+
+            const mesAtualISO = window.obterMesAtualISO();
+            const mesSel = window.obterMesSelecionadoRanking();
+
+            // Coleta todos os meses disponíveis nos lançamentos + mês atual + mês selecionado
+            const mesesSet = new Set([mesAtualISO, mesSel]);
+            lancamentosDB.forEach(l => {
+                if (l.data && l.data.length >= 7) {
+                    mesesSet.add(l.data.substring(0, 7));
+                }
+            });
+            const mesesOrdenados = Array.from(mesesSet).sort().reverse();
+
+            selectMes.innerHTML = mesesOrdenados.map(m => {
+                const sufixo = m === mesAtualISO ? ' (Mês Atual)' : ' (Histórico)';
+                return `<option value="${m}" ${m === mesSel ? 'selected' : ''}>${window.formatarMesAnoExtenso(m)}${sufixo}</option>`;
+            }).join('');
+
+            const nomeMesExtenso = window.formatarMesAnoExtenso(mesSel);
+            const tituloEl = document.getElementById('ranking-titulo-mes');
+            if (tituloEl) {
+                tituloEl.innerText = `Arena de Produção — ${nomeMesExtenso}`;
+            }
+
+            const badgeMesEl = document.getElementById('ranking-badge-mes-ativo');
+            const statusCicloEl = document.getElementById('ranking-status-ciclo');
+            if (mesSel === mesAtualISO) {
+                const hoje = new Date();
+                const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+                const diasRestantes = Math.max(0, ultimoDiaMes - hoje.getDate());
+                const proxMesDate = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+                const proxMesStr = `01/${String(proxMesDate.getMonth() + 1).padStart(2, '0')}/${proxMesDate.getFullYear()}`;
+                if (badgeMesEl) {
+                    badgeMesEl.className = 'badge badge-mot';
+                    badgeMesEl.innerText = `🟢 Em Disputa (${nomeMesExtenso})`;
+                }
+                if (statusCicloEl) {
+                    statusCicloEl.innerHTML = `<span>🟢 <strong>Ciclo Mensal Ativo</strong> • Faltam <strong>${diasRestantes} dia(s)</strong> para fechar o mês • Novo ciclo inicia em <strong>${proxMesStr}</strong></span>`;
+                }
+            } else {
+                if (badgeMesEl) {
+                    badgeMesEl.className = 'badge badge-aju';
+                    badgeMesEl.innerText = `🏛️ Histórico Oficial (${nomeMesExtenso})`;
+                }
+                if (statusCicloEl) {
+                    statusCicloEl.innerHTML = `<span>🏛️ <strong>Ranking Histórico Fechado</strong> (${nomeMesExtenso}) • Dados preservados permanentemente</span>`;
+                }
+            }
+
+            const {
+                lista,
+                totalRotasMes,
+                totalLancamentosMes,
+                recordeDiaQtd,
+                recordeDiaNome,
+                recordeDiaData
+            } = window.calcularDadosRankingDoMes(mesSel, rankingCategoriaFiltro);
+
+            const ativos = lista.filter(p => p.totalRotas > 0);
+            const lider = ativos.length > 0 ? ativos[0] : null;
+            const mediaParticipante = ativos.length > 0 ? (totalRotasMes / ativos.length) : 0;
+
+            // Atualiza KPIs
+            document.getElementById('rk-kpi-total-rotas').innerText = `${totalRotasMes} rota(s)`;
+            document.getElementById('rk-kpi-total-lanc').innerText = `${totalLancamentosMes} registo(s) no mês`;
+            document.getElementById('rk-kpi-lider-nome').innerText = lider ? lider.nome : 'Aguardando rotas';
+            document.getElementById('rk-kpi-lider-rotas').innerText = lider ? `${lider.totalRotas} rota(s) (${lider.funcao})` : '0 rotas';
+            document.getElementById('rk-kpi-media').innerText = `${mediaParticipante.toFixed(1).replace('.', ',')} rotas`;
+            document.getElementById('rk-kpi-ativos').innerText = `${ativos.length} funcionário(s) pontuando`;
+            const metaMotAtual = window.obterMetaPrincipalPorFuncao('Motorista');
+            const metaAjuAtual = window.obterMetaPrincipalPorFuncao('Ajudante');
+            const totalBateramMeta = lista.filter(p => {
+                const m = window.obterMetaPrincipalPorFuncao(p.funcao);
+                return m > 0 && p.totalRotas >= m;
+            }).length;
+
+            document.getElementById('rk-kpi-recorde-qtd').innerText = `${totalBateramMeta} bateram a meta`;
+            document.getElementById('rk-kpi-recorde-nome').innerText = `🚗 Mot: ${metaMotAtual} rotas | 📦 Aju: ${metaAjuAtual} rotas (⚙️ editar)`;
+
+            // Renderiza o Pódio Olímpico (Top 3: exibe 2º na esquerda, 1º no centro, 3º na direita em telas grandes)
+            const podiumContainer = document.getElementById('ranking-podium-container');
+            if (podiumContainer) {
+                if (ativos.length === 0) {
+                    podiumContainer.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 28px 16px; color: var(--muted);">
+                            <div style="font-size: 36px; margin-bottom: 6px;">🏁</div>
+                            <strong style="font-size: 15px; color: var(--ink);">Nenhuma rota registada em ${nomeMesExtenso} para esta categoria ainda!</strong>
+                            <p style="font-size: 12.5px; margin-top: 4px;">Assim que as rotas forem lançadas, o pódio ganhará vida automaticamente em tempo real.</p>
+                        </div>
+                    `;
+                } else {
+                    const top1 = lista[0] && lista[0].totalRotas > 0 ? lista[0] : null;
+                    const top2 = lista[1] && lista[1].totalRotas > 0 ? lista[1] : null;
+                    const top3 = lista[2] && lista[2].totalRotas > 0 ? lista[2] : null;
+
+                    const montarCardPodio = (item, pos) => {
+                        if (!item) {
+                            const medalhaVazia = pos === 1 ? '🥇 1º Lugar' : (pos === 2 ? '🥈 2º Lugar' : '🥉 3º Lugar');
+                            return `
+                                <div class="podium-spot pos-${pos}" style="opacity: 0.55; cursor: default;">
+                                    <div class="podium-rank-pill">${medalhaVazia}</div>
+                                    <div class="podium-avatar">?</div>
+                                    <div class="podium-name">Vaga em Disputa</div>
+                                    <div class="podium-routes-num">0</div>
+                                    <div class="podium-routes-label">rotas no mês</div>
+                                </div>
+                            `;
+                        }
+                        const medalhaTxt = pos === 1 ? '🥇 1º Lugar • Ouro' : (pos === 2 ? '🥈 2º Lugar • Prata' : '🥉 3º Lugar • Bronze');
+                        const coroaHtml = pos === 1 ? `<div class="podium-crown">👑</div>` : '';
+                        const badgeFunc = item.funcao === 'Motorista' ? '🚗 Motorista' : '📦 Ajudante';
+                        return `
+                            <div class="podium-spot pos-${pos}" onclick="window.abrirModalDetalheRanking('${item.id}')" title="Clique para ver o histórico de ${item.nome} no mês">
+                                ${coroaHtml}
+                                <div class="podium-rank-pill">${medalhaTxt}</div>
+                                <div class="podium-avatar">${window.obterIniciaisNome(item.nome)}</div>
+                                <div class="podium-name">${item.nome}</div>
+                                <span style="font-size: 11px; font-weight: 700; color: var(--muted);">${badgeFunc}</span>
+                                <div class="podium-routes-num">${item.totalRotas}</div>
+                                <div class="podium-routes-label">rotas realizadas</div>
+                                <div class="podium-substats">
+                                    <span>📅 ${item.diasAtivos}d ativos</span>
+                                    <span>🎯 Meta: ${item.totalRotas}/${window.obterMetaPrincipalPorFuncao(item.funcao)}</span>
+                                </div>
+                            </div>
+                        `;
+                    };
+
+                    podiumContainer.innerHTML = `
+                        ${montarCardPodio(top2, 2)}
+                        ${montarCardPodio(top1, 1)}
+                        ${montarCardPodio(top3, 3)}
+                    `;
+                }
+            }
+
+            // Renderiza a Tabela de Classificação Completa com filtro de busca por nome
+            const termoBusca = (document.getElementById('ranking-busca-nome')?.value || '').trim().toLowerCase();
+            const tbody = document.getElementById('tabela-ranking-detalhado');
+            if (tbody) {
+                const maxRotasLider = lider ? Math.max(1, lider.totalRotas) : 1;
+                const listaExibida = lista.filter(item => !termoBusca || item.nome.toLowerCase().includes(termoBusca));
+
+                if (listaExibida.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--muted);">Nenhum funcionário encontrado para este filtro.</td></tr>`;
+                } else {
+                    tbody.innerHTML = listaExibida.map((item) => {
+                        const posReal = lista.findIndex(x => x.id === item.id) + 1;
+                        const temRotas = item.totalRotas > 0;
+                        let posBadgeClass = 'rank-pos-other';
+                        let posConteudo = `${posReal}º`;
+                        if (temRotas && posReal === 1) { posBadgeClass = 'rank-pos-1'; posConteudo = '🥇'; }
+                        else if (temRotas && posReal === 2) { posBadgeClass = 'rank-pos-2'; posConteudo = '🥈'; }
+                        else if (temRotas && posReal === 3) { posBadgeClass = 'rank-pos-3'; posConteudo = '🥉'; }
+
+                        // Insígnias / Conquistas e Status de Meta Mensal do funcionário
+                        const infoMeta = window.avaliarStatusMetaFuncionario(item.totalRotas, item.funcao);
+                        let insigniasHtml = '';
+                        if (temRotas && posReal === 1) {
+                            insigniasHtml += `<span class="rank-achievement-tag gold">👑 Líder do Mês</span>`;
+                        }
+                        if (infoMeta.bateuPrincipal) {
+                            insigniasHtml += `<span class="rank-achievement-tag goal-hit">🎯 Meta Mensal Batida! (${item.totalRotas}/${infoMeta.metaPrincipal})</span>`;
+                        } else if (temRotas) {
+                            insigniasHtml += `<span class="rank-achievement-tag goal-progress">🎯 Meta ${item.funcao}: ${item.totalRotas}/${infoMeta.metaPrincipal} (faltam ${infoMeta.faltamPrincipal})</span>`;
+                        }
+                        if (infoMeta.ultimoEscalaoBatido) {
+                            insigniasHtml += `<span class="rank-achievement-tag gold">🏅 ${infoMeta.ultimoEscalaoBatido.nome} (${infoMeta.ultimoEscalaoBatido.qtd}+)</span>`;
+                        }
+                        if (temRotas && item.diasAtivos >= 5) {
+                            insigniasHtml += `<span class="rank-achievement-tag teal">⚡ Alta Consistência</span>`;
+                        }
+
+                        const pctLider = temRotas ? Math.min(100, Math.round((item.totalRotas / maxRotasLider) * 100)) : 0;
+                        const corBarra = posReal === 1
+                            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                            : (posReal === 2 ? 'linear-gradient(90deg, #64748b, #94a3b8)' : (posReal === 3 ? 'linear-gradient(90deg, #ea580c, #fb923c)' : 'linear-gradient(90deg, #12a7a2, #38bdf8)'));
+
+                        let textoDistancia = 'Sem rotas no período';
+                        if (temRotas) {
+                            if (posReal === 1) {
+                                const seg = lista[1] && lista[1].totalRotas > 0 ? lista[1] : null;
+                                const vantagem = seg ? (item.totalRotas - seg.totalRotas) : item.totalRotas;
+                                textoDistancia = vantagem > 0 ? `Líder com +${vantagem} rota(s) de vantagem` : `Empatado na liderança (${pctLider}%)`;
+                            } else {
+                                const anterior = lista[posReal - 2];
+                                const diff = anterior ? Math.max(0, anterior.totalRotas - item.totalRotas) : 0;
+                                textoDistancia = diff > 0
+                                    ? `${pctLider}% do líder • A ${diff} rota(s) do ${posReal - 1}º lugar`
+                                    : `${pctLider}% do líder • Empatado em rotas com o ${posReal - 1}º`;
+                            }
+                        }
+
+                        const badgeFuncClass = item.funcao === 'Motorista' ? 'badge-mot' : 'badge-aju';
+
+                        return `
+                            <tr style="cursor: pointer;" onclick="window.abrirModalDetalheRanking('${item.id}')" title="Clique para ver todos os detalhes de ${item.nome}">
+                                <td style="text-align: center; padding: 10px 8px;">
+                                    <span class="rank-pos-badge ${posBadgeClass}">${posConteudo}</span>
+                                </td>
+                                <td style="padding: 10px 12px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <strong style="font-size: 13.5px; color: var(--ink);">${posReal}º — ${item.nome}</strong>
+                                        <span class="badge ${badgeFuncClass}">${item.funcao}</span>
+                                    </div>
+                                    <div>${insigniasHtml}</div>
+                                </td>
+                                <td style="padding: 10px 12px;">
+                                    <div class="rank-progress-wrap">
+                                        <div class="rank-progress-track">
+                                            <div class="rank-progress-fill" style="width: ${pctLider}%; background: ${corBarra};"></div>
+                                        </div>
+                                        <span style="font-size: 11px; color: var(--muted); font-weight: 600;">${textoDistancia}</span>
+                                    </div>
+                                </td>
+                                <td style="text-align: center; padding: 10px 12px; font-weight: 700;">${item.diasAtivos} dia(s)</td>
+                                <td style="text-align: center; padding: 10px 12px; font-weight: 600;">${item.mediaDia.toFixed(1).replace('.', ',')}</td>
+                                <td style="text-align: center; padding: 10px 12px;">${item.turnoPrincipal}</td>
+                                <td style="text-align: right; padding: 10px 14px;">
+                                    <span style="font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: ${temRotas ? 'var(--ink)' : 'var(--muted)'};">${item.totalRotas}</span>
+                                    <span style="font-size: 11px; color: var(--muted); display: block;">rota(s)</span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Renderiza a Galeria Histórica de Campeões (todos os meses com produção registada)
+            window.renderizarGaleriaHistoricoRanking(mesesOrdenados, mesSel, mesAtualISO);
+        };
+
+        window.renderizarGaleriaHistoricoRanking = function(mesesOrdenados, mesSelecionadoAtual, mesAtualISO) {
+            const container = document.getElementById('ranking-historico-galeria');
+            if (!container) return;
+
+            const cardsHtml = [];
+            mesesOrdenados.forEach(m => {
+                const dadosMes = window.calcularDadosRankingDoMes(m, rankingCategoriaFiltro);
+                const ativosMes = dadosMes.lista.filter(x => x.totalRotas > 0);
+                if (ativosMes.length === 0 && m !== mesAtualISO) return;
+
+                const camp1 = ativosMes[0] || null;
+                const camp2 = ativosMes[1] || null;
+                const camp3 = ativosMes[2] || null;
+                const isSelecionado = m === mesSelecionadoAtual;
+                const isAtual = m === mesAtualISO;
+
+                cardsHtml.push(`
+                    <div class="history-champ-card ${isSelecionado ? 'active-month' : ''}" onclick="window.aoMudarMesRanking('${m}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: var(--ink);">${window.formatarMesAnoExtenso(m)}</strong>
+                            <span class="badge ${isAtual ? 'badge-mot' : 'badge-aju'}" style="font-size: 9.5px;">${isAtual ? 'Em Curso' : 'Fechado 🏆'}</span>
+                        </div>
+                        ${camp1 ? `
+                            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 7px 10px; margin-bottom: 6px;">
+                                <div style="font-size: 10.5px; color: #92400e; font-weight: 700;">🥇 CAMPEÃO DO MÊS</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                                    <strong style="font-size: 13px; color: var(--ink);">${camp1.nome}</strong>
+                                    <strong style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #b45309;">${camp1.totalRotas} rotas</strong>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: var(--muted); display: flex; flex-direction: column; gap: 2px;">
+                                <span>🥈 2º: <strong>${camp2 ? `${camp2.nome} (${camp2.totalRotas})` : '-'}</strong></span>
+                                <span>🥉 3º: <strong>${camp3 ? `${camp3.nome} (${camp3.totalRotas})` : '-'}</strong></span>
+                            </div>
+                        ` : `
+                            <div style="font-size: 12px; color: var(--muted); padding: 10px 0;">Aguardando os primeiros lançamentos deste mês.</div>
+                        `}
+                        <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);">
+                            <span>Total: <strong>${dadosMes.totalRotasMes} rotas</strong></span>
+                            <span style="color: var(--brand-dark); font-weight: 700;">Ver ranking →</span>
+                        </div>
+                    </div>
+                `);
+            });
+
+            if (cardsHtml.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 14px;">Nenhum histórico mensal encontrado ainda.</div>`;
+            } else {
+                container.innerHTML = cardsHtml.join('');
+            }
+        };
+
+        window.abrirModalDetalheRanking = function(idFuncionario) {
+            const mesSel = window.obterMesSelecionadoRanking();
+            const { lista } = window.calcularDadosRankingDoMes(mesSel, 'Todos');
+            const pos = lista.findIndex(x => x.id === idFuncionario) + 1;
+            const item = lista[pos - 1];
+            if (!item) return;
+
+            document.getElementById('modal-rank-titulo').innerText = item.nome;
+            const medalhaEl = document.getElementById('modal-rank-medalha');
+            medalhaEl.innerText = `${pos}º Lugar em ${window.formatarMesAnoExtenso(mesSel)}`;
+
+            document.getElementById('modal-rank-subtitulo').innerText =
+                `Função: ${item.funcao} • Veículo mais utilizado: ${item.veiculoPrincipal} • Turno principal: ${item.turnoPrincipal}`;
+
+            document.getElementById('modal-rank-resumo-boxes').innerHTML = `
+                <div style="background: #fef3c7; border-radius: 8px; padding: 8px; text-align: center;">
+                    <span style="font-size: 10px; font-weight: 700; color: #92400e; text-transform: uppercase; display: block;">Total no Mês</span>
+                    <strong style="font-family: 'Space Grotesk', sans-serif; font-size: 18px; color: #b45309;">${item.totalRotas} rotas</strong>
+                </div>
+                <div style="background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px; text-align: center;">
+                    <span style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block;">Dias Ativos</span>
+                    <strong style="font-family: 'Space Grotesk', sans-serif; font-size: 18px; color: var(--ink);">${item.diasAtivos} dias</strong>
+                </div>
+                <div style="background: var(--brand-pale); border-radius: 8px; padding: 8px; text-align: center;">
+                    <span style="font-size: 10px; font-weight: 700; color: var(--brand-dark); text-transform: uppercase; display: block;">Média Diária</span>
+                    <strong style="font-family: 'Space Grotesk', sans-serif; font-size: 18px; color: var(--brand-dark);">${item.mediaDia.toFixed(1).replace('.', ',')} /dia</strong>
+                </div>
+            `;
+
+            const tbody = document.getElementById('modal-rank-tbody');
+            const lancsOrdenados = [...item.lancamentosMes].sort(compararPorDataDecrescenteECriacao);
+            if (lancsOrdenados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 14px; color: var(--muted);">Nenhuma rota lançada neste mês.</td></tr>`;
+            } else {
+                tbody.innerHTML = lancsOrdenados.map(l => `
+                    <tr>
+                        <td style="padding: 7px 10px;">${formatarData(l.data)}</td>
+                        <td style="padding: 7px 10px;">${l.turno || '-'}</td>
+                        <td style="padding: 7px 10px;">${l.veiculoNome || '-'}</td>
+                        <td style="padding: 7px 10px; font-weight: 700;">${l.qtd} rota(s)</td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('modal-detalhe-ranking').style.display = 'flex';
+        };
+
+        window.fecharModalDetalheRanking = function() {
+            document.getElementById('modal-detalhe-ranking').style.display = 'none';
+        };
+
+        window.dispararConfetesRanking = function(qtdParticulas = 70) {
+            const canvas = document.getElementById('ranking-confetti-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            if (animacaoConfeteId) {
+                cancelAnimationFrame(animacaoConfeteId);
+                animacaoConfeteId = null;
+            }
+
+            const cores = ['#fde047', '#f59e0b', '#12a7a2', '#c8ed74', '#38bdf8', '#f43f5e', '#a855f7'];
+            const particulas = Array.from({ length: qtdParticulas }, () => ({
+                x: Math.random() * canvas.width,
+                y: -20 - Math.random() * 140,
+                w: 7 + Math.random() * 6,
+                h: 5 + Math.random() * 5,
+                cor: cores[Math.floor(Math.random() * cores.length)],
+                vx: (Math.random() - 0.5) * 4,
+                vy: 2.5 + Math.random() * 4.5,
+                rot: Math.random() * 360,
+                vRot: (Math.random() - 0.5) * 10
+            }));
+
+            let quadros = 0;
+            function animar() {
+                quadros++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let vivas = 0;
+                particulas.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.rot += p.vRot;
+                    if (p.y < canvas.height + 20) {
+                        vivas++;
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate((p.rot * Math.PI) / 180);
+                        ctx.fillStyle = p.cor;
+                        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                        ctx.restore();
+                    }
+                });
+                if (vivas > 0 && quadros < 220) {
+                    animacaoConfeteId = requestAnimationFrame(animar);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    animacaoConfeteId = null;
+                }
+            }
+            animacaoConfeteId = requestAnimationFrame(animar);
         };
 
         window.imprimirPDF = function() {
